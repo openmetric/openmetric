@@ -60,3 +60,26 @@ All variable data are stored in ``/openmetric/$component/data``, configuration f
 
 Runnable binaries, scripts, libraries are installed in the system location (i.e. ``/usr`` or ``/usr/local``),
 so there will be less problems with ``PATH`` env.
+
+
+# Develop
+
+## Build docker images
+
+Since these images share common directories to `COPY` from, all `docker build` command should be run in the project root directory.
+For example:
+
+```
+docker build -t openmetric/compile -f dockerfiles/compiler
+```
+
+## Project directory layout
+
+```
+/--
+  |- docker/     # this directory contains container runtime scripts (e.g. entrypoints)
+  |              # will be copied to all images' /docker
+  |- build/      # this directory contains image build scripts, will be copied to images'
+  |              # /build during docker build, and removed after build.
+  |- dockerfiles/$image/    # Dockerfile for images
+```
