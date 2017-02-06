@@ -19,7 +19,7 @@ This images exposes two interfaces, carbon-relay to accept metrics, and graphite
 
 **openmetric/standalone** uses third-party implementation written in golang to replace the official one.
 Currently they are
-[carbon-relay-ng](https://github.com/graphite-ng/carbon-relay-ng),
+[carbon-c-relay](https://github.com/grobian/carbon-c-relay),
 [go-carbon](https://github.com/lomik/go-carbon),
 [carbonzipper](https://github.com/dgryski/carbonzipper),
 [carbonapi](https://github.com/dgryski/carbonapi).
@@ -32,7 +32,7 @@ with just a few parameters to set up a running cluster.
 
 ## Quick start
 
-Start a openmetric instance:
+Start an openmetric instance:
 
 ```
 docker run -d --name openmetric -p 2003:2003 -p 8080:8080 openmetric/standalone-vanilla
@@ -41,26 +41,15 @@ docker run -d --name openmetric -p 2003:2003 -p 8080:8080 openmetric/standalone-
 Visit ``http://openmetric-host:8080/``, you should see the graphite-web interface,
 you can browse metrics of carbon-cache itself.
 
-It's time to push metrics to openmetric.
-Enable ``write_graphite`` plugin in collectd, add the following section in ``/etc/collectd/collectd.conf``:
+It's time to push metrics to openmetric. Let's generate a series of random int values at 10s interval:
 
 ```
-LoadPlugin write_graphite
-
-<Plugin write_graphite>
-    <Node default>
-        Host "openmetric-host"
-        Port "2003"
-        Protocol "tcp"
-        LogSendErrors true
-        Prefix "collectd."
-        SeparateInstances true
-        StoreRates false
-    </Node>
-</Plugin>
+while true; do
+  echo "test.random.int ${RANDOM} $(date +%s)"
+done | nc openmetric-host 2003
 ```
 
-Wait a few minutes and you should see metrics coming from collectd in graphite-web interface.
+Wait a few minutes and you should see metrics in graphite-web interface.
 
 ## Directory layout in images
 
