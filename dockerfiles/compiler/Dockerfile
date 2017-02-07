@@ -9,9 +9,10 @@ ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 COPY build /build
 RUN /build/build-compiler.sh && rm -rf /build
 
-# the compiled binaries will be copied to /output directory
-VOLUME ["/output"]
+# the compiled binaries will be copied to /binary directory
+VOLUME ["/binary"]
 
 # /compile.sh is the default command
+COPY build/binary-info /binary-info
 COPY dockerfiles/compiler/compile.sh /usr/bin/compile
 CMD ["compile", "all"]

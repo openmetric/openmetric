@@ -1,0 +1,17 @@
+# this file will be `source`d by compile-*.sh
+
+CARBON_C_RELAY_REPO=https://github.com/grobian/carbon-c-relay.git
+CARBON_C_RELAY_REV=v2.6
+CARBON_C_RELAY_OUTPUT=/binary/carbon-c-relay/carbon-relay-$CARBON_C_RELAY_REV
+
+GO_CARBON_REPO=https://github.com/lomik/go-carbon.git
+GO_CARBON_REV=v0.9.0
+GO_CARBON_OUTPUT=/binary/go-carbon/carbon-cache-$GO_CARBON_REV
+
+CARBONZIPPER_REPO=https://github.com/dgryski/carbonzipper.git
+CARBONZIPPER_REV=66eb53c
+CARBONZIPPER_OUTPUT=/binary/carbonzipper/carbon-zipper-$CARBONZIPPER_REV
+
+CARBONAPI_REPO=https://github.com/dgryski/carbonapi.git
+CARBONAPI_REV=9a17fbb
+CARBONAPI_OUTPUT=/binary/carbonapi/carbon-api-$CARBONAPI_REV

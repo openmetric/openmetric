@@ -2,21 +2,7 @@
 
 TIME=$(date +%Y%m%d%H%M%S)
 
-CARBON_C_RELAY_REPO=https://github.com/grobian/carbon-c-relay.git
-CARBON_C_RELAY_REV=v2.6
-CARBON_C_RELAY_OUTPUT=/output/carbon-c-relay/relay-$CARBON_C_RELAY_REV
-
-GO_CARBON_REPO=https://github.com/lomik/go-carbon.git
-GO_CARBON_REV=v0.9.0
-GO_CARBON_OUTPUT=/output/go-carbon/carbon-$GO_CARBON_REV
-
-CARBONZIPPER_REPO=https://github.com/dgryski/carbonzipper.git
-CARBONZIPPER_REV=66eb53c
-CARBONZIPPER_OUTPUT=/output/carbonzipper/carbonzipper-$CARBONZIPPER_REV
-
-CARBONAPI_REPO=https://github.com/dgryski/carbonapi.git
-CARBONAPI_REV=9a17fbb
-CARBONAPI_OUTPUT=/output/carbonapi/carbonzpi-$CARBONAPI_REV
+source /binary-info
 
 clone_repo() {
     local repo=$1
