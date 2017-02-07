@@ -13,5 +13,5 @@ RUN /build/build-compiler.sh && rm -rf /build
 VOLUME ["/output"]
 
 # /compile.sh is the default command
-COPY dockerfiles/compiler/compile.sh /compile.sh
-CMD ["/compile.sh", "all"]
+COPY dockerfiles/compiler/compile.sh /usr/bin/compile
+CMD ["compile", "all"]

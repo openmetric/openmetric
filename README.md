@@ -35,7 +35,7 @@ with just a few parameters to set up a running cluster.
 Start an openmetric instance:
 
 ```
-docker run -d --name openmetric -p 2003:2003 -p 8080:8080 openmetric/standalone-vanilla
+docker run -d --name openmetric -p 2003:2003 -p 8080:8080 openmetric/standalone
 ```
 
 Visit ``http://openmetric-host:8080/``, you should see the graphite-web interface,
@@ -70,7 +70,7 @@ Since these images share common directories to `COPY` from, all `docker build` c
 For example:
 
 ```
-docker build -t openmetric/compile -f dockerfiles/compiler
+docker build -t openmetric/compile -f dockerfiles/compiler .
 ```
 
 ## Project directory layout
