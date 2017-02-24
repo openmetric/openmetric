@@ -1,4 +1,4 @@
 binary/
 
 # cache for golang install tarball
-build/golang.tar.gz
+cache/

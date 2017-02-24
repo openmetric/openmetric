@@ -1,89 +1,130 @@
-#!/bin/bash
+#!/bin/sh
+set -e
 
-TIME=$(date +%Y%m%d%H%M%S)
+usage() {
+    echo "This image is used to compile openmetric components' binaries."
+    echo "Currently, the following components are supported:"
+    echo "    * carbon-c-relay: https://github.com/grobian/carbon-c-relay"
+    echo "    * go-carbon: https://github.com/lomik/go-carbon"
+    echo "    * carbonzipper: https://github.com/dgryski/carbonzipper"
+    echo "    * carbonapi: https://github.com/dgryski/carbonapi"
+    echo ""
+    echo "Usage:"
+    echo "docker run -it --rm -v \$PWD/binary:/binary openmetric/compile <component> <revision>"
+    echo ""
+    echo "Note:"
+    echo "    * <revision> should be an existing git REV"
+}
 
-source /binary-info
-
-clone_repo() {
-    local repo=$1
-    local dest=$2
+# clones the $repo_url into $src_dir, check out $rev
+clone_git_repo() {
+    local repo_url=$1
+    local src_dir=$2
     local rev=$3
 
-    mkdir -p $(dirname $dest)
-    git clone $repo $dest
-    pushd $dest >/dev/null
-    git checkout $rev
-    popd >/dev/null
+    echo "Cloning repo: $repo_url, rev: $rev ..."
+    mkdir -p $(dirname $src_dir)
+    git clone -b $rev --depth 1 $repo_url $src_dir
+}
+
+# if the revision is a branch name, turn it into sha
+get_git_rev() {
+    local src_dir=$1
+    local rev=$2
+    (cd "$src_dir"; \
+    if git show-ref --verify --quiet "refs/heads/$rev"; then
+        git rev-parse --short HEAD
+    else
+        echo "$rev"
+    fi)
 }
 
 compile_carbon_c_relay() {
-    echo "Compiling carbon-c-relay..."
+    local repo_url=https://github.com/grobian/carbon-c-relay.git
+    local src_dir=/build/carbon-c-relay
+    local output=/binary/carbon-c-relay/carbon-c-relay
+    local rev=${1:-master}
 
-    clone_repo $CARBON_C_RELAY_REPO /build/carbon-c-relay $CARBON_C_RELAY_REV
+    echo "Compiling carbon-c-relay ..."
 
-    (cd /build/carbon-c-relay && make relay)
-    install -v -D -m 755 /build/carbon-c-relay/relay $CARBON_C_RELAY_OUTPUT
+    clone_git_repo $repo_url $src_dir $rev
+    rev=$(get_git_rev $src_dir $rev)
 
-    echo "Successfully compiled carbon-c-relay, output: $CARBON_C_RELAY_OUTPUT"
+    (cd $src_dir && make relay)
+    install -v -D -m 755 $src_dir/relay $output-$rev
+    ln -snf $(basename $output-$rev) $output
+
+    echo "Successfully compiled carbon-c-relay, output: $output-$rev"
 }
 
 compile_go_carbon() {
+    local repo_url=https://github.com/lomik/go-carbon.git
+    local src_dir=/build/go-carbon
+    local output=/binary/go-carbon/go-carbon
+    local rev=${1:-master}
+
     echo "Compiling go-carbon..."
 
-    clone_repo $GO_CARBON_REPO /build/go-carbon $GO_CARBON_REV
+    clone_git_repo $repo_url $src_dir $rev
+    rev=$(get_git_rev $src_dir $rev)
 
-    (cd /build/go-carbon && make submodules && make)
-    install -v -D -m 755 /build/go-carbon/go-carbon $GO_CARBON_OUTPUT
+    (cd $src_dir && make submodules && make)
+    install -v -D -m 755 $src_dir/go-carbon $output-$rev
+    ln -snf $(basename $output-$rev) $output
 
-    echo "Successfully compiled go-carbon, output: $GO_CARBON_OUTPUT"
+    echo "Successfully compiled go-carbon, output: $output-$rev"
 }
 
 compile_carbonzipper() {
+    local repo_url=https://github.com/dgryski/carbonzipper.git
+    local src_dir=$GOPATH/src/github.com/dgryski/carbonzipper
+    local output=/binary/carbonzipper/carbonzipper
+    local rev=${1:-master}
+
     echo "Compiling carbonzipper..."
 
-    clone_repo $CARBONZIPPER_REPO $GOPATH/src/github.com/dgryski/carbonzipper $CARBONZIPPER_REV
+    clone_git_repo $repo_url $src_dir $rev
+    rev=$(get_git_rev $src_dir $rev)
 
     go get -v github.com/dgryski/carbonzipper
-    install -v -D -m 755 $GOPATH/bin/carbonzipper $CARBONZIPPER_OUTPUT
+    install -v -D -m 755 $GOPATH/bin/carbonzipper $output-$rev
+    ln -snf $(basename $output-$rev) $output
 
-    echo "Successfully compiled carbonzipper, output $CARBONZIPPER_OUTPUT"
+    echo "Successfully compiled carbonzipper, output $output-$rev"
 }
 
 compile_carbonapi() {
+    local repo_url=https://github.com/dgryski/carbonapi.git
+    local src_dir=$GOPATH/src/github.com/dgryski/carbonapi
+    local output=/binary/carbonapi/carbonapi
+    local rev=${1:-master}
+
     echo "Compiling carbonapi..."
 
-    clone_repo $CARBONAPI_REPO $GOPATH/src/github.com/dgryski/carbonapi $CARBONAPI_REV
+    clone_git_repo $repo_url $src_dir $rev
+    rev=$(get_git_rev $src_dir $rev)
 
     go get -v github.com/dgryski/carbonapi
-    install -v -D -m 755 $GOPATH/bin/carbonapi $CARBONAPI_OUTPUT
+    install -v -D -m 755 $GOPATH/bin/carbonapi $output-$rev
+    ln -snf $(basename $output-$rev) $output
 
-    echo "Successfully compiled carbonapi, output $CARBONAPI_OUTPUT"
+    echo "Successfully compiled carbonapi, output $output-$rev"
 }
 
-while [[ ${#} -gt 0 ]]; do
-    case "$1" in
-        carbon-c-relay)
-            compile_carbon_c_relay
-            ;;
-        go-carbon)
-            compile_go_carbon
-            ;;
-        carbonzipper)
-            compile_carbonzipper
-            ;;
-        carbonapi)
-            compile_carbonapi
-            ;;
-        all)
-            compile_carbon_c_relay
-            compile_go_carbon
-            compile_carbonzipper
-            compile_carbonapi
-            ;;
-        *)
-            echo "Unrecognized build target: $1, please check!"
-            exit 1
-            ;;
-    esac
-    shift
-done
+case "$1" in
+    carbon-c-relay)
+        compile_carbon_c_relay $2
+        ;;
+    go-carbon)
+        compile_go_carbon $2
+        ;;
+    carbonzipper)
+        compile_carbonzipper $2
+        ;;
+    carbonapi)
+        compile_carbonapi $2
+        ;;
+    *)
+        usage
+        ;;
+esac
