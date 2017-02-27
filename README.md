@@ -70,7 +70,7 @@ Since these images share common directories to `COPY` from, all `docker build` c
 For example:
 
 ```
-docker build -t openmetric/compile -f dockerfiles/compiler .
+docker build -t openmetric/compiler -f dockerfiles/compiler .
 ```
 
 ## Project directory layout
