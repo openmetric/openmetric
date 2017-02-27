@@ -55,8 +55,8 @@ Wait a few minutes and you should see metrics in graphite-web interface.
 
 To make it easy to maintain the containers, we try to make directory layout consistent in all images.
 
-All variable data are stored in ``/openmetric/data/$component``, configuration files are stored in
-``/openmetric/conf/$component``, log files are stored in ``/openmetric/log/$component``.
+All variable data are stored in ``/openmetric/$component/data``, configuration files are stored in
+``/openmetric/$component/conf``, log files are stored in ``/openmetric/$component/log``.
 
 Runnable binaries, scripts, libraries are installed in the system location (i.e. ``/usr`` or ``/usr/local``),
 so there will be less problems with ``PATH`` env.

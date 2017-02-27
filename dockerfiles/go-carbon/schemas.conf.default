@@ -1,0 +1,9 @@
+[go-carbon]
+pattern = ^go-carbon\.
+retentions = 60s:30d
+# about 506KB per wsp file
+
+[default]
+pattern = .*
+retentions = 10s:2h,60s:7d,600s:1y
+# about 742KB per wsp file

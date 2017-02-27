@@ -1,0 +1,13 @@
+#!/bin/bash
+
+function prepare_conf() {
+    if test ! -e /openmetric/go-carbon/conf/carbon.conf; then
+        cp /openmetric/default/carbon.conf.default /openmetric/go-carbon/conf/carbon.conf
+    fi
+    if test ! -e /openmetric/go-carbon/conf/schemas.conf; then
+        cp /openmetric/default/schemas.conf.default /openmetric/go-carbon/conf/schemas.conf
+    fi
+}
+
+prepare_conf
+exec go-carbon --config /openmetric/go-carbon/conf/carbon.conf

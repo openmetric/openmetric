@@ -1,8 +1,13 @@
+image-exists-compiler:
+	@docker inspect openmetric/compiler:latest >/dev/null
+
 build-image-compiler:
 	docker build -t openmetric/compiler:latest -f dockerfiles/compiler/Dockerfile .
 
-image-exists-compiler:
-	@docker inspect openmetric/compiler:latest >/dev/null
+
+build-image-go-carbon:
+	docker build -t openmetric/go-carbon:latest -f dockerfiles/go-carbon/Dockerfile .
+
 
 compile-carbon-c-relay: image-exists-compiler
 	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler carbon-c-relay v2.6
