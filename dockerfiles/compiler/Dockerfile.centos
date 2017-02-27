@@ -1,6 +1,6 @@
 # This image is only used to compile binaries
 
-FROM alpine:3.5
+FROM centos:7
 MAINTAINER Zhang Cheng <zhangcheng@cmss.chinamobile.com>
 
 ARG GOLANG_VERSION=1.8
@@ -24,7 +24,7 @@ RUN if [ ! -e /cache/golang.tar.gz ]; then \
 				mkdir -p "$GOPATH/src" "$GOPATH/bin" \
 			;fi
 # install other compiler tools
-RUN apk add --no-cache git build-base
+RUN yum install -y git make gcc
 RUN rm -rf /cache
 
 # the compiled binaries will be copied to /binary directory

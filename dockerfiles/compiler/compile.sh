@@ -16,6 +16,20 @@ usage() {
     echo "    * <revision> should be an existing git REV"
 }
 
+os() {
+    if test -e /etc/alpine-release; then
+        echo "alpine"
+    elif test -e /etc/centos-release; then
+        echo "centos"
+    elif grep -q DISTRIB_ID=Ubuntu /etc/lsb-release; then
+        echo "ubuntu"
+    elif test -e /etc/debian_version; then
+        echo "debian"
+    else
+        echo "linux"
+    fi
+}
+
 # clones the $repo_url into $src_dir, check out $rev
 clone_git_repo() {
     local repo_url=$1
@@ -51,10 +65,10 @@ compile_carbon_c_relay() {
     rev=$(get_git_rev $src_dir $rev)
 
     (cd $src_dir && make relay)
-    install -v -D -m 755 $src_dir/relay $output-$rev
-    ln -snf $(basename $output-$rev) $output
+    install -v -D -m 755 $src_dir/relay $output-$rev-$(os)
+    ln -snf $(basename $output-$rev-$(os)) $output
 
-    echo "Successfully compiled carbon-c-relay, output: $output-$rev"
+    echo "Successfully compiled carbon-c-relay, output: $output-$rev-$(os)"
 }
 
 compile_go_carbon() {
@@ -69,10 +83,10 @@ compile_go_carbon() {
     rev=$(get_git_rev $src_dir $rev)
 
     (cd $src_dir && make submodules && make)
-    install -v -D -m 755 $src_dir/go-carbon $output-$rev
-    ln -snf $(basename $output-$rev) $output
+    install -v -D -m 755 $src_dir/go-carbon $output-$rev-$(os)
+    ln -snf $(basename $output-$rev-$(os)) $output
 
-    echo "Successfully compiled go-carbon, output: $output-$rev"
+    echo "Successfully compiled go-carbon, output: $output-$rev-$(os)"
 }
 
 compile_carbonzipper() {
@@ -87,10 +101,10 @@ compile_carbonzipper() {
     rev=$(get_git_rev $src_dir $rev)
 
     go get -v github.com/dgryski/carbonzipper
-    install -v -D -m 755 $GOPATH/bin/carbonzipper $output-$rev
-    ln -snf $(basename $output-$rev) $output
+    install -v -D -m 755 $GOPATH/bin/carbonzipper $output-$rev-$(os)
+    ln -snf $(basename $output-$rev-$(os)) $output
 
-    echo "Successfully compiled carbonzipper, output $output-$rev"
+    echo "Successfully compiled carbonzipper, output $output-$rev-$(os)"
 }
 
 compile_carbonapi() {
@@ -105,10 +119,10 @@ compile_carbonapi() {
     rev=$(get_git_rev $src_dir $rev)
 
     go get -v github.com/dgryski/carbonapi
-    install -v -D -m 755 $GOPATH/bin/carbonapi $output-$rev
-    ln -snf $(basename $output-$rev) $output
+    install -v -D -m 755 $GOPATH/bin/carbonapi $output-$rev-$(os)
+    ln -snf $(basename $output-$rev-$(os)) $output
 
-    echo "Successfully compiled carbonapi, output $output-$rev"
+    echo "Successfully compiled carbonapi, output $output-$rev-$(os)"
 }
 
 case "$1" in
