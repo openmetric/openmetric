@@ -1,13 +1,44 @@
 #!/bin/bash
+set -e
+
+ENABLE_UDP=${ENABLE_UDP:-false}
+ENABLE_TCP=${ENABLE_TCP:-true}
+ENABLE_PICKLE=${ENABLE_PICKLE:-false}
+ENABLE_CARBONSERVER=${ENABLE_CARBONSERVER:-true}
+ENABLE_CARBONLINK=${ENABLE_CARBONLINK:-false}
+
+function log() {
+    echo "[go-carbon-wrapper] $@"
+}
+
+function create_carbon_conf() {
+    cat /openmetric/default/carbon.conf.default | sed \
+        "s/ENABLE_UDP/${ENABLE_UDP}/g;
+         s/ENABLE_TCP/${ENABLE_TCP}/g;
+         s/ENABLE_PICKLE/${ENABLE_PICKLE}/g;
+         s/ENABLE_CARBONSERVER/${ENABLE_CARBONSERVER}/g;
+         s/ENABLE_CARBONLINK/${ENABLE_CARBONLINK}/g;
+         " \
+        > /openmetric/go-carbon/conf/carbon.conf
+}
+
+function create_schemas_conf() {
+    cat /openmetric/default/schemas.conf.default \
+        > /openmetric/go-carbon/conf/schemas.conf
+}
 
 function prepare_conf() {
     if test ! -e /openmetric/go-carbon/conf/carbon.conf; then
-        cp /openmetric/default/carbon.conf.default /openmetric/go-carbon/conf/carbon.conf
+        log "Creating carbon.conf ..."
+        create_carbon_conf
     fi
     if test ! -e /openmetric/go-carbon/conf/schemas.conf; then
-        cp /openmetric/default/schemas.conf.default /openmetric/go-carbon/conf/schemas.conf
+        log "Creating schemas.conf ..."
+        create_schemas_conf
     fi
 }
 
 prepare_conf
+
+log "Starting go-carbon ..."
 exec go-carbon --config /openmetric/go-carbon/conf/carbon.conf

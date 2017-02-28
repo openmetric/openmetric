@@ -6,11 +6,11 @@
 set -e
 
 for subdir in conf data log; do
-    dir=/openmetric/go-carbon/$subdir
-    if test ! -d "$dir"; then
-        mkdir -p "$dir"
-        chown openmetric:openmetric "$dir"
-    fi
+    # We don't need to recursively chown. The directory permission
+    # will be wrong only when a volume attached initially.
+    # With large data directory, a recursive chown will also cause
+    # a long lag.
+    chown openmetric:openmetric "/openmetric/go-carbon/$subdir"
 done
 
 exec su-exec openmetric /usr/bin/go-carbon-wrapper

@@ -1,9 +1,11 @@
+# each datapoint consists of a (timestamp, float) tuple, thus requires 4 + 8 = 12byte
+
 [go-carbon]
 pattern = ^go-carbon\.
 retentions = 60s:30d
-# about 506KB per wsp file
+# 43200 points, 518400 Bytes (about 506KB)
 
 [default]
 pattern = .*
-retentions = 10s:2h,60s:7d,600s:1y
-# about 742KB per wsp file
+retentions = 10s:2h,60s:1d,600s:30d
+# 720 + 1440 + 4320 = 6480 points, 77760 Bytes (about 76KB)
