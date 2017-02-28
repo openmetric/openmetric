@@ -2,7 +2,7 @@
 user = ""
 logfile = "/openmetric/go-carbon/log/go-carbon.log"
 log-level = "info"
-graph-prefix = "go-carbon.agents.{host}"
+graph-prefix = "openmetric.go-carbon.{host}"
 metric-endpoint = "local"
 max-cpu = 1
 metric-interval = "1m0s"

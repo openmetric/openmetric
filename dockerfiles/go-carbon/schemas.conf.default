@@ -1,7 +1,8 @@
 # each datapoint consists of a (timestamp, float) tuple, thus requires 4 + 8 = 12byte
 
-[go-carbon]
-pattern = ^go-carbon\.
+# all openmetric components' metrics are prefixed with "openmetric.$component.$host."
+[openmetric]
+pattern = ^openmetric\.
 retentions = 60s:30d
 # 43200 points, 518400 Bytes (about 506KB)
 
