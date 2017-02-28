@@ -1,0 +1,75 @@
+version: "2"
+services:
+  carbon-c-relay:
+    image: openmetric/carbon-c-relay
+    build:
+      context: .
+      dockerfile: dockerfiles/carbon-c-relay/Dockerfile
+
+    environment:
+      RELAY_WORKERS: 4
+      RELAY_REPLICATION: 1
+      RELAY_REMOTES: go-carbon-1:2003 proto tcp go-carbon-2:2003 proto tcp
+    ports:
+      - "2003:2003/tcp"
+      - "2003:2003/udp"
+    volumes:
+      - carbon-c-relay-conf:/openmetric/carbon-c-relay/conf
+      - carbon-c-relay-log:/openmetric/carbon-c-relay/log
+    links:
+      - go-carbon-1
+      - go-carbon-2
+    ulimits:
+      nofile:
+        soft: 131070
+        hard: 131070
+    networks:
+      openmetric_net: {}
+
+  go-carbon-1:
+    image: openmetric/go-carbon
+    build:
+      context: .
+      dockerfile: dockerfiles/go-carbon/Dockerfile
+
+    volumes:
+      - go-carbon-1-data:/openmetric/go-carbon/data
+      - go-carbon-1-conf:/openmetric/go-carbon/conf
+      - go-carbon-1-log:/openmetric/go-carbon/log
+    ulimits:
+      nofile:
+        soft: 131070
+        hard: 131070
+    networks:
+      openmetric_net: {}
+
+  go-carbon-2:
+    image: openmetric/go-carbon
+    build:
+      context: .
+      dockerfile: dockerfiles/go-carbon/Dockerfile
+
+    volumes:
+      - go-carbon-2-data:/openmetric/go-carbon/data
+      - go-carbon-2-conf:/openmetric/go-carbon/conf
+      - go-carbon-2-log:/openmetric/go-carbon/log
+    ulimits:
+      nofile:
+        soft: 131070
+        hard: 131070
+    networks:
+      openmetric_net: {}
+
+networks:
+  openmetric_net:
+    driver: bridge
+
+volumes:
+  carbon-c-relay-conf: {}
+  carbon-c-relay-log: {}
+  go-carbon-1-data: {}
+  go-carbon-1-conf: {}
+  go-carbon-1-log: {}
+  go-carbon-2-data: {}
+  go-carbon-2-conf: {}
+  go-carbon-2-log: {}
