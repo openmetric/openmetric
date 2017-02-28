@@ -1,0 +1,35 @@
+#!/bin/bash
+set -e
+
+RELAY_REPLICATION=${RELAY_REPLICATION:-1}
+RELAY_REMOTES=${RELAY_REMOTES:-not-configured}
+
+function log() {
+    echo "[carbon-c-relay-wrapper] $@"
+}
+
+function create_relay_conf() {
+    cat /openmetric/default/relay.conf.default | sed \
+        "s/RELAY_REPLICATION/${RELAY_REPLICATION}/g;
+         s/RELAY_REMOTES/${RELAY_REMOTES}/g;
+         " \
+        > /openmetric/carbon-c-relay/conf/relay.conf
+}
+
+function prepare_conf() {
+    if test ! -e /openmetric/carbon-c-relay/conf/relay.conf; then
+        log "Creating relay.conf ..."
+        create_relay_conf
+    fi
+}
+
+prepare_conf
+
+log "Starting carbon-c-relay ..."
+exec carbon-c-relay \
+    -f /openmetric/carbon-c-relay/conf/relay.conf \
+    -l /openmetric/carbon-c-relay/log/relay.log \
+    -w ${RELAY_WORKERS:-4} \
+    # defines the characters that are next to [A-Za-z0-9] allowed in metrics,
+    # default list is '-_:#'
+    -c '-_:#@'

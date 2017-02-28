@@ -1,0 +1,20 @@
+# This is the default carbon-relay configuration created by openmetric.
+# You are very likely going to write one by yourself.
+
+cluster default
+    fnv1a_ch replication RELAY_REPLICATION
+        RELAY_REMOTES
+    ;
+
+match *
+    send to
+        default
+    stop
+    ;
+
+statistics
+    submit every 60 seconds
+    prefix with openmetric.carbon-c-relay.\.1
+    send to default
+    stop
+    ;

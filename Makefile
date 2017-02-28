@@ -8,6 +8,9 @@ build-image-compiler:
 build-image-go-carbon:
 	docker build -t openmetric/go-carbon:latest -f dockerfiles/go-carbon/Dockerfile .
 
+build-image-carbon-c-relay:
+	docker build -t openmetric/carbon-c-relay:latest -f dockerfiles/carbon-c-relay/Dockerfile .
+
 
 compile-carbon-c-relay: image-exists-compiler
 	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler carbon-c-relay v2.6
