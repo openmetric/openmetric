@@ -24,7 +24,7 @@ RUN if [ ! -e /cache/golang.tar.gz ]; then \
 				mkdir -p "$GOPATH/src" "$GOPATH/bin" \
 			;fi
 # install other compiler tools
-RUN yum install -y git make gcc
+RUN yum install -y git make gcc bison
 RUN rm -rf /cache
 
 # the compiled binaries will be copied to /binary directory

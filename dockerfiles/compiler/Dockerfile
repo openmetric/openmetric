@@ -4,7 +4,7 @@ FROM golang:1.8-alpine
 MAINTAINER Zhang Cheng <zhangcheng@cmss.chinamobile.com>
 
 # install other compiler tools
-RUN apk add --no-cache git build-base
+RUN apk add --no-cache git build-base bison
 
 # the compiled binaries will be copied to /binary directory
 VOLUME ["/binary"]
