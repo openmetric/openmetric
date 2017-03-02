@@ -4,6 +4,9 @@ image-exists-compiler:
 build-image-compiler:
 	docker build -t openmetric/compiler:latest -f dockerfiles/compiler/Dockerfile .
 
+build-image-tools:
+	docker build -t openmetric/tools:latest -f dockerfiles/tools/Dockerfile .
+
 
 build-image-go-carbon:
 	docker build -t openmetric/go-carbon:latest -f dockerfiles/go-carbon/Dockerfile .
