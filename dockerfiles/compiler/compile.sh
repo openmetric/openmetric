@@ -90,6 +90,9 @@ compile_go_carbon() {
 }
 
 compile_carbonzipper() {
+    git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/dgryski/carbonapi
+    git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/dgryski/carbonzipper
+
     local repo_url=https://github.com/dgryski/carbonzipper.git
     local src_dir=$GOPATH/src/github.com/dgryski/carbonzipper
     local output=/binary/carbonzipper/carbonzipper
@@ -108,6 +111,9 @@ compile_carbonzipper() {
 }
 
 compile_carbonapi() {
+    git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/dgryski/carbonapi
+    git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/dgryski/carbonzipper
+
     local repo_url=https://github.com/dgryski/carbonapi.git
     local src_dir=$GOPATH/src/github.com/dgryski/carbonapi
     local output=/binary/carbonapi/carbonapi
