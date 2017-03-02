@@ -35,4 +35,4 @@ COPY dockerfiles/carbon-c-relay/entry.sh /entry.sh
 EXPOSE 2003
 VOLUME ["/openmetric/carbon-c-relay/conf", "/openmetric/carbon-c-relay/log"]
 
-ENTRYPOINT ["/bin/bash", "/entry.sh"]
+ENTRYPOINT ["/entry.sh"]

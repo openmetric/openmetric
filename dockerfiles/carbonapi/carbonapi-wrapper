@@ -1,0 +1,47 @@
+#!/bin/bash
+set -e
+
+function log() {
+    echo "[carbonapi-wrapper] $@"
+}
+
+function create_carbonzipper_conf() {
+    cat /openmetric/default/zipper.conf.default | sed \
+        "s@^\s*//.*@@g;
+         s@^\s*#.*@@g;
+         s@GRAPHITE_URL@$GRAPHITE_URL@g;
+         s@ZIPPER_BACKENDS@$ZIPPER_BACKENDS@g;
+         " \
+        > /openmetric/carbonapi/conf/zipper.conf
+}
+
+function prepare_conf() {
+    if test ! -e /openmetric/carbonapi/conf/zipper.conf; then
+        log "Creating zipper.conf ..."
+        create_carbonzipper_conf
+    fi
+}
+
+prepare_conf
+
+log "Starting carbonzipper ..."
+carbonzipper \
+    -c /openmetric/carbonapi/conf/zipper.conf \
+    -logdir /openmetric/carbonapi/log/ \
+    -pid /tmp/carbonzipper.pid \
+    &
+
+log "Starting carbonapi ..."
+carbonapi \
+    -z http://localhost:8080 \
+    -p 5000 \
+    -logdir /openmetric/carbonapi/log/ \
+    -graphite "$GRAPHITE_URL" \
+    -prefix openmetric.api \
+    -pid /tmp/carbonapi.pid \
+    &
+
+# sleep 5s, wait for pidfile to be ready
+sleep 5
+
+wait -n $(cat /tmp/carbonzipper.pid) $(cat /tmp/carbonapi.pid)

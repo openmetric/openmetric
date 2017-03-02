@@ -41,7 +41,7 @@ COPY dockerfiles/go-carbon/schemas.conf.default /openmetric/default/schemas.conf
 COPY dockerfiles/go-carbon/go-carbon-wrapper /usr/bin/go-carbon-wrapper
 COPY dockerfiles/go-carbon/entry.sh /entry.sh
 
-EXPOSE 2003
+EXPOSE 2003 8080
 VOLUME ["/openmetric/go-carbon/data", "/openmetric/go-carbon/log", "/openmetric/go-carbon/conf"]
 
-ENTRYPOINT ["/bin/bash", "/entry.sh"]
+ENTRYPOINT ["/entry.sh"]

@@ -60,6 +60,31 @@ services:
     networks:
       openmetric_net: {}
 
+  carbonapi:
+    image: openmetric/carbonapi
+    build:
+      context: .
+      dockerfile: dockerfiles/carbonapi/Dockerfile
+
+    environment:
+      GRAPHITE_URL: carbon-c-relay:2003
+      ZIPPER_BACKENDS: '"http://go-caron-1:8080", "http://go-carbon-2:8080"'
+    ports:
+      - "5000:5000"
+    volumes:
+      - carbonapi-conf:/openmetric/carbonapi/conf
+      - carbonapi-log:/openmetric/carbonapi/log
+    links:
+      - carbon-c-relay
+      - go-carbon-1
+      - go-carbon-2
+    ulimits:
+      nofile:
+        soft: 131070
+        hard: 131070
+    networks:
+      openmetric_net: {}
+
 networks:
   openmetric_net:
     driver: bridge
@@ -73,3 +98,5 @@ volumes:
   go-carbon-2-data: {}
   go-carbon-2-conf: {}
   go-carbon-2-log: {}
+  carbonapi-conf: {}
+  carbonapi-log: {}
