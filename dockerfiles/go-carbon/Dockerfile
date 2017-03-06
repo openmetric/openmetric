@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM openmetric/base:centos
 MAINTAINER Zhang Cheng <zhangcheng@cmss.chinamobile.com>
 
 ENV GO_CARBON_VERSION=v0.9.1
@@ -15,27 +15,7 @@ ENV \
     # however, we don't use them by default
     ENABLE_CARBONLINK=false
 
-
-# NOTE, create the user with specific UID, this uid should:
-# * unlikely to exist on host env, so the volume data won't be accessible to
-#   regular users on host
-# * be fixed, so when never the docker image updates, files in volumes won't
-#   have wrong permissions.
-RUN apk add --no-cache bash su-exec \
-	&& adduser \
-		-h /openmetric \
-		-s /bin/bash \
-		-D \
-		-u 998 \
-		openmetric openmetric
-
-RUN mkdir -pv \
-		"/openmetric/go-carbon/data" \
-		"/openmetric/go-carbon/conf" \
-		"/openmetric/go-carbon/log" \
-	&& chown openmetric:openmetric -R /openmetric/go-carbon
-
-COPY binary/go-carbon/go-carbon-${GO_CARBON_VERSION}-alpine /usr/bin/go-carbon
+COPY binary/go-carbon/go-carbon-${GO_CARBON_VERSION}-centos /usr/bin/go-carbon
 COPY dockerfiles/go-carbon/carbon.conf.default /openmetric/default/carbon.conf.default
 COPY dockerfiles/go-carbon/schemas.conf.default /openmetric/default/schemas.conf.default
 COPY dockerfiles/go-carbon/go-carbon-wrapper /usr/bin/go-carbon-wrapper

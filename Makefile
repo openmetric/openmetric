@@ -7,19 +7,22 @@ build-image-compiler:
 build-image-tools:
 	docker build -t openmetric/tools:latest -f dockerfiles/tools/Dockerfile .
 
+image-exists-base:
+	@docker inspect openmetric/base:centos >/dev/null
+build-image-base:
+	docker build -t openmetric/base:centos -f dockerfiles/base/Dockerfile .
 
-build-image-go-carbon:
+build-image-go-carbon: image-exists-base
 	docker build -t openmetric/go-carbon:latest -f dockerfiles/go-carbon/Dockerfile .
 
-build-image-carbon-c-relay:
+build-image-carbon-c-relay: image-exists-base
 	docker build -t openmetric/carbon-c-relay:latest -f dockerfiles/carbon-c-relay/Dockerfile .
 
-build-image-carbonapi:
+build-image-carbonapi: image-exists-base
 	docker build -t openmetric/carbonapi:latest -f dockerfiles/carbonapi/Dockerfile .
 
-
 compile-carbon-c-relay: image-exists-compiler
-	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler carbon-c-relay v2.6
+	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler carbon-c-relay master
 
 compile-go-carbon: image-exists-compiler
 	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler go-carbon v0.9.1
@@ -30,4 +33,7 @@ compile-carbonzipper: image-exists-compiler
 compile-carbonapi: image-exists-compiler
 	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler carbonapi
 
-compile-all: compile-carbon-c-relay compile-go-carbon compile-carbonzipper compile-carbonapi
+compile-grafana: image-exists-compiler
+	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler grafana v4.1.2
+
+compile-all: compile-carbon-c-relay compile-go-carbon compile-carbonzipper compile-carbonapi compile-grafana
