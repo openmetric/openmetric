@@ -131,6 +131,37 @@ compile_carbonapi() {
     echo "Successfully compiled carbonapi, output $output-$rev-$(os)"
 }
 
+compile_grafana() {
+    local repo_url=https://github.com/grafana/grafana.git
+    local src_dir=$GOPATH/src/github.com/grafana/grafana
+    local output=/binary/grafana/grafana
+    local rev=${1:-master}
+
+    echo "Compiling grafana-server..."
+
+    clone_git_repo $repo_url $src_dir $rev
+    rev=$(get_git_rev $src_dir $rev)
+
+    cd $src_dir
+    go run build.go setup
+    go run build.go build
+
+    npm install -g yarn
+    yarn install --pure-lockfile
+    # disable karma:test task
+    sed -i "/karma:test/d" tasks/build_task.js
+    ./node_modules/.bin/grunt release
+
+    mkdir -p tarball-root/usr/bin tarball-root/etc/default tarball-root/usr/share/grafana
+    cp tmp/bin/grafana-server tmp/bin/grafana-cli tarball-root/usr/bin
+    cp packaging/deb/default/grafana-server tarball-root/etc/default
+    cp -r tmp/conf tmp/public tmp/scripts tmp/vendor tarball-root/usr/share/grafana/
+    mkdir -p $(dirname $output)
+    tar -C tarball-root -czf $output-$rev-$(os).tar.gz .
+
+    echo "Successfully compiled grafana, output $output-$rev-$(os).tar.gz"
+}
+
 case "$1" in
     carbon-c-relay)
         compile_carbon_c_relay $2
@@ -144,7 +175,16 @@ case "$1" in
     carbonapi)
         compile_carbonapi $2
         ;;
+    grafana)
+        compile_grafana $2
+        ;;
     *)
-        usage
+        if command -v "$1" >/dev/null; then
+            _cmd="$1"
+            shift
+            exec "$_cmd" "$@"
+        else
+            usage
+        fi
         ;;
 esac
