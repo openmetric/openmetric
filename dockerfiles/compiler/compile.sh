@@ -180,9 +180,7 @@ case "$1" in
         ;;
     *)
         if command -v "$1" >/dev/null; then
-            _cmd="$1"
-            shift
-            exec "$_cmd" "$@"
+            exec "$@"
         else
             usage
         fi

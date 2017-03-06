@@ -12,9 +12,9 @@ ENV \
 COPY binary/carbon-c-relay/carbon-c-relay-${CARBON_C_RELAY_VERSION}-centos /usr/bin/carbon-c-relay
 COPY dockerfiles/carbon-c-relay/relay.conf.default /openmetric/default/relay.conf.default
 COPY dockerfiles/carbon-c-relay/carbon-c-relay-wrapper /usr/bin/carbon-c-relay-wrapper
-COPY dockerfiles/carbon-c-relay/entry.sh /entry.sh
 
 EXPOSE 2003
 VOLUME ["/openmetric/carbon-c-relay/conf", "/openmetric/carbon-c-relay/log"]
 
 ENTRYPOINT ["/entry.sh"]
+CMD ["carbon-c-relay-wrapper"]

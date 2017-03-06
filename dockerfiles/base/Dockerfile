@@ -19,3 +19,5 @@ RUN groupadd -g 990 openmetric \
 		-s /bin/bash \
 		-u 990 -g 990 \
 		openmetric
+
+COPY dockerfiles/base/entry.sh /entry.sh

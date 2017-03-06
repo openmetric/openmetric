@@ -44,4 +44,4 @@ carbonapi \
 # sleep 5s, wait for pidfile to be ready
 sleep 5
 
-wait -n $(cat /tmp/carbonzipper.pid) $(cat /tmp/carbonapi.pid)
+wait $(cat /tmp/carbonzipper.pid) $(cat /tmp/carbonapi.pid)

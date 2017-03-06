@@ -15,9 +15,9 @@ COPY binary/carbonzipper/carbonzipper-${CARBONZIPPER_VERSION}-centos /usr/bin/ca
 COPY binary/carbonapi/carbonapi-${CARBONAPI_VERSION}-centos /usr/bin/carbonapi
 COPY dockerfiles/carbonapi/zipper.conf.default /openmetric/default/zipper.conf.default
 COPY dockerfiles/carbonapi/carbonapi-wrapper /usr/bin/carbonapi-wrapper
-COPY dockerfiles/carbonapi/entry.sh /entry.sh
 
 EXPOSE 5000
 VOLUME ["/openmetric/carbonapi/conf", "/openmetric/carbonapi/log"]
 
 ENTRYPOINT ["/entry.sh"]
+CMD ["carbonapi-wrapper"]
