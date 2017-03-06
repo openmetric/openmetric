@@ -85,6 +85,29 @@ services:
     networks:
       openmetric_net: {}
 
+  grafana:
+    image: openmetric/grafana
+    build:
+      context: .
+      dockerfile: dockerfiles/grafana/Dockerfile
+
+    environment: {}
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/openmetric/grafana/data
+      - grafana-log:/openmetric/grafana/log
+      - grafana-conf:/openmetric/grafana/conf
+      - grafana-plugins:/openmetric/grafana/plugins
+    links:
+      - carbonapi
+    ulimits:
+      nofile:
+        soft: 131070
+        hard: 131070
+    networks:
+      openmetric_net: {}
+
 networks:
   openmetric_net:
     driver: bridge
@@ -100,3 +123,7 @@ volumes:
   go-carbon-2-log: {}
   carbonapi-conf: {}
   carbonapi-log: {}
+  grafana-log: {}
+  grafana-conf: {}
+  grafana-data: {}
+  grafana-plugins: {}
