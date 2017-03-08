@@ -20,6 +20,9 @@ build-image-grafana: image-exists-base
 
 build-image-all: build-image-base build-image-carbon-c-relay build-image-go-carbon build-image-carbonapi build-image-grafana build-image-tools
 
+build-image-standalone: image-exists-base
+	docker build -t openmetric/standalone:latest -f dockerfiles/standalone/Dockerfile .
+
 ###################################################
 image-exists-compiler:
 	@docker inspect openmetric/compiler:latest >/dev/null

@@ -5,7 +5,7 @@
 
 set -e
 
-for dir in /openmetric/*/*; do
+for dir in /openmetric/ /openmetric/*/*; do
     if test -d "$dir"; then
         chown openmetric:openmetric "$dir"
     fi

@@ -30,6 +30,4 @@ exec carbon-c-relay \
     -f /openmetric/carbon-c-relay/conf/relay.conf \
     -l /openmetric/carbon-c-relay/log/relay.log \
     -w ${RELAY_WORKERS:-4} \
-    # defines the characters that are next to [A-Za-z0-9] allowed in metrics,
-    # default list is '-_:#'
     -c '-_:#@'

@@ -1,0 +1,163 @@
+#!/bin/bash
+set -e
+
+function log() {
+    echo "[openmetric-wrapper] $@"
+}
+
+function create_relay_conf() {
+    cp /usr/share/openmetric/conf/relay.conf.standalone /openmetric/carbon-c-relay/conf/relay.conf
+}
+
+function create_carbon_conf() {
+    cp /usr/share/openmetric/conf/carbon.conf.standalone /openmetric/go-carbon/conf/carbon.conf
+}
+
+function create_schemas_conf() {
+    cp /usr/share/openmetric/conf/schemas.conf.standalone /openmetric/go-carbon/conf/schemas.conf
+}
+
+function create_carbonzipper_conf() {
+    cat /usr/share/openmetric/conf/zipper.conf.standalone | sed \
+        "s@^\s*//.*@@g;
+         s@^\s*#.*@@g;
+         " \
+        >/openmetric/carbonapi/conf/zipper.conf
+}
+
+function create_grafana_conf() {
+    cp /usr/share/grafana/conf/sample.ini /openmetric/grafana/conf/grafana.ini
+}
+
+function sqlite3_table_exist() {
+    local _db="$1"
+    local _tbl="$2"
+    local _result=$(sqlite3 $_db "SELECT count(name) FROM sqlite_master WHERE type='table' AND name='$_tbl';")
+    if [[ "$_result" -gt 0 ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function initialize_grafana_conf() {
+    while ! sqlite3_table_exist /openmetric/grafana/data/grafana.db data_source; do
+        sleep 0.5
+    done
+
+    log "Registering default data source ..."
+    local _created=$(date "+%Y-%m-%d %H:%M:%S")
+    sqlite3 /openmetric/grafana/data/grafana.db \
+        "INSERT INTO data_source
+            ('org_id', 'version', 'type', 'name', 'access', 'url', 'basic_auth', 'is_default', 'created', 'updated')
+            VALUES
+            (1, 0, 'graphite', 'default', 'proxy', 'http://localhost:5000', 0, 1, '${_created}', '${_created}')
+            ;
+        "
+    log "registered."
+}
+
+function prepare_conf() {
+    if test ! -e /openmetric/carbon-c-relay/conf/relay.conf; then
+        log "Creating relay.conf ..."
+        create_relay_conf
+    fi
+
+    if test ! -e /openmetric/go-carbon/conf/carbon.conf; then
+        log "Creating carbon.conf ..."
+        create_carbon_conf
+    fi
+
+    if test ! -e /openmetric/go-carbon/conf/schemas.conf; then
+        log "Creating schemas.conf ..."
+        create_schemas_conf
+    fi
+
+    if test ! -e /openmetric/carbonapi/conf/zipper.conf; then
+        log "Creating zipper.conf ..."
+        create_carbonzipper_conf
+    fi
+
+    if test ! -e /openmetric/grafana/conf/grafana.ini; then
+        log "Creating grafana.ini ..."
+        create_grafana_conf
+    fi
+
+    if test ! -e /openmetric/grafana/data/grafana.db; then
+        ADMIN_PASSWORD=$(cat /dev/urandom | tr -dc 'A-Z-a-z-0-9%_' | head -c${1:-20})
+        echo "Running for the first time, generating random admin password: $ADMIN_PASSWORD"
+        sed -i "s@;admin_password = admin@admin_password = $ADMIN_PASSWORD@g" /openmetric/grafana/conf/grafana.ini
+        GRAFANA_NOT_INITED=true
+    fi
+}
+
+function prepare_dir() {
+    mkdir -p /openmetric/carbon-c-relay/{conf,log}
+    mkdir -p /openmetric/go-carbon/{conf,log,data}
+    mkdir -p /openmetric/carbonapi/{conf,log}
+    mkdir -p /openmetric/grafana/{conf,log,data,plugins}
+}
+
+wait_for_any_exit(){
+    while true; do
+        for pid in "$@"; do
+            if test ! -d "/proc/$pid"; then break; fi
+        done
+        sleep 0.5
+    done
+}
+
+prepare_dir
+prepare_conf
+
+log "Starting go-carbon ..."
+go-carbon \
+    --config /openmetric/go-carbon/conf/carbon.conf \
+    &
+echo $! > /tmp/go-carbon.pid
+
+log "Starting carbon-c-relay ..."
+carbon-c-relay \
+    -f /openmetric/carbon-c-relay/conf/relay.conf \
+    -l /openmetric/carbon-c-relay/log/relay.log \
+    -c '-_:#@' \
+    &
+echo $! > /tmp/carbon-c-relay.pid
+
+log "Starting carbonzipper ..."
+carbonzipper \
+    -c /openmetric/carbonapi/conf/zipper.conf \
+    -logdir /openmetric/carbonapi/log/ \
+    &
+echo $! > /tmp/carbonzipper.pid
+
+log "Starting carbonapi ..."
+carbonapi \
+    -z http://127.0.0.1:8080 \
+    -p 5000 \
+    -logdir /openmetric/carbonapi/log/ \
+    -graphite "127.0.0.1:2003" \
+    -prefix openmetric.api \
+    &
+echo $! > /tmp/carbonapi.pid
+
+log "Starting grafana-server ..."
+grafana-server \
+    --homepath=/usr/share/grafana \
+    --config=/etc/grafana/grafana.ini \
+    cfg:default.paths.data="/openmetric/grafana/data" \
+    cfg:default.paths.logs="/openmetric/grafana/log" \
+    cfg:default.paths.plugins="/openmetric/grafana/plugins" \
+    &
+echo $! > /tmp/grafana.pid
+
+if [[ "$GRAFANA_NOT_INITED" == "true" ]]; then
+    initialize_grafana_conf
+fi
+
+wait_for_any_exit \
+    $(cat /tmp/carbon-c-relay.pid) \
+    $(cat /tmp/go-carbon.pid) \
+    $(cat /tmp/carbonzipper.pid) \
+    $(cat /tmp/carbonapi.pid) \
+    $(cat /tmp/grafana.pid)
