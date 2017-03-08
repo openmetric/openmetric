@@ -10,7 +10,7 @@ ENV \
     RELAY_REPICATION=1
 
 COPY binary/carbon-c-relay/carbon-c-relay-${CARBON_C_RELAY_VERSION}-centos /usr/bin/carbon-c-relay
-COPY dockerfiles/carbon-c-relay/relay.conf.default /openmetric/default/relay.conf.default
+COPY dockerfiles/carbon-c-relay/relay.conf.tmpl /usr/share/openmetric/conf/relay.conf.tmpl
 COPY dockerfiles/carbon-c-relay/carbon-c-relay-wrapper /usr/bin/carbon-c-relay-wrapper
 
 EXPOSE 2003

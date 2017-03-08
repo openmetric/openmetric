@@ -6,7 +6,7 @@ function log() {
 }
 
 function create_carbonzipper_conf() {
-    cat /openmetric/default/zipper.conf.default | sed \
+    cat /usr/share/openmetric/conf/zipper.conf.tmpl | sed \
         "s@^\s*//.*@@g;
          s@^\s*#.*@@g;
          s@GRAPHITE_URL@$GRAPHITE_URL@g;

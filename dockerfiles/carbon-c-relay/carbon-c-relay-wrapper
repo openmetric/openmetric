@@ -9,7 +9,7 @@ function log() {
 }
 
 function create_relay_conf() {
-    cat /openmetric/default/relay.conf.default | sed \
+    cat /usr/share/openmetric/conf/relay.conf.tmpl | sed \
         "s/RELAY_REPLICATION/${RELAY_REPLICATION}/g;
          s/RELAY_REMOTES/${RELAY_REMOTES}/g;
          " \

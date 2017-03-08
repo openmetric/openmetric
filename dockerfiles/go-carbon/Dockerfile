@@ -16,8 +16,8 @@ ENV \
     ENABLE_CARBONLINK=false
 
 COPY binary/go-carbon/go-carbon-${GO_CARBON_VERSION}-centos /usr/bin/go-carbon
-COPY dockerfiles/go-carbon/carbon.conf.default /openmetric/default/carbon.conf.default
-COPY dockerfiles/go-carbon/schemas.conf.default /openmetric/default/schemas.conf.default
+COPY dockerfiles/go-carbon/carbon.conf.tmpl /usr/share/openmetric/conf/carbon.conf.tmpl
+COPY dockerfiles/go-carbon/schemas.conf.tmpl /usr/share/openmetric/conf/schemas.conf.tmpl
 COPY dockerfiles/go-carbon/go-carbon-wrapper /usr/bin/go-carbon-wrapper
 
 EXPOSE 2003 8080

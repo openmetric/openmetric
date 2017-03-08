@@ -12,7 +12,7 @@ function log() {
 }
 
 function create_carbon_conf() {
-    cat /openmetric/default/carbon.conf.default | sed \
+    cat /usr/share/openmetric/conf/carbon.conf.tmpl | sed \
         "s/ENABLE_UDP/${ENABLE_UDP}/g;
          s/ENABLE_TCP/${ENABLE_TCP}/g;
          s/ENABLE_PICKLE/${ENABLE_PICKLE}/g;
@@ -23,7 +23,7 @@ function create_carbon_conf() {
 }
 
 function create_schemas_conf() {
-    cat /openmetric/default/schemas.conf.default \
+    cat /usr/share/openmetric/conf/schemas.conf.tmpl \
         > /openmetric/go-carbon/conf/schemas.conf
 }
 

@@ -13,7 +13,7 @@ ENV \
 
 COPY binary/carbonzipper/carbonzipper-${CARBONZIPPER_VERSION}-centos /usr/bin/carbonzipper
 COPY binary/carbonapi/carbonapi-${CARBONAPI_VERSION}-centos /usr/bin/carbonapi
-COPY dockerfiles/carbonapi/zipper.conf.default /openmetric/default/zipper.conf.default
+COPY dockerfiles/carbonapi/zipper.conf.tmpl /usr/share/openmetric/conf/zipper.conf.tmpl
 COPY dockerfiles/carbonapi/carbonapi-wrapper /usr/bin/carbonapi-wrapper
 
 EXPOSE 5000

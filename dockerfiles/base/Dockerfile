@@ -6,7 +6,9 @@ RUN yum install -y gcc \
 	&& curl -fsSL https://raw.githubusercontent.com/ncopa/su-exec/master/su-exec.c -o /tmp/su-exec.c \
 	&& gcc -Wall -Werror -g -o /usr/bin/su-exec /tmp/su-exec.c \
 	&& rm -f /tmp/su-exec.c \
-	&& yum autoremove -y gcc
+	&& yum autoremove -y gcc \
+	# put docs, conf templates, examples, etc. here
+	&& mkdir -p /usr/share/openmetric
 
 # create openmetric user with specific UID, this uid should:
 # * unlikely to exist on host env, so the volume data won't be accessible to
