@@ -22,8 +22,8 @@ Currently they are
 [carbon-c-relay](https://github.com/grobian/carbon-c-relay),
 [go-carbon](https://github.com/lomik/go-carbon),
 [carbonzipper](https://github.com/dgryski/carbonzipper),
-[carbonapi](https://github.com/dgryski/carbonapi).
-Since carbonapi does not provide dashboard, we also included a graphite-web, you can enable it use environment virable.
+[carbonapi](https://github.com/dgryski/carbonapi),
+[grafana](https://github.com/grafana/grafana).
 
 **openmetric/$component** is series of images contain just one component, so you can choose and deploy freely.
 
@@ -35,11 +35,15 @@ with just a few parameters to set up a running cluster.
 Start an openmetric instance:
 
 ```
-docker run -d --name openmetric -p 2003:2003 -p 8080:8080 openmetric/standalone
+docker run -d --name openmetric -p 2003:2003 -p 3000:3000 -p 5000:5000 openmetric/standalone
 ```
 
-Visit ``http://openmetric-host:8080/``, you should see the graphite-web interface,
-you can browse metrics of carbon-cache itself.
+Visit ``http://openmetric-host:3000/``, you should see the grafana interface. Grafana default user is
+`admin`, default password is generated randomly on initial start, you can find in docker logs:
+
+```
+docker logs openmetric | grep 'admin password'
+```
 
 It's time to push metrics to openmetric. Let's generate a series of random int values at 10s interval:
 
@@ -49,7 +53,7 @@ while true; do
 done | nc openmetric-host 2003
 ```
 
-Wait a few minutes and you should see metrics in graphite-web interface.
+You can now create dashboard in grafana, and start drawing graphs. Data source is registered on initial run.
 
 ## Directory layout in images
 
@@ -71,13 +75,4 @@ For example:
 
 ```
 docker build -t openmetric/compiler -f dockerfiles/compiler .
-```
-
-## Project directory layout
-
-```
-/--
-  |- docker/     # this directory contains container runtime scripts (e.g. entrypoints)
-  |              # will be copied to all images' /docker
-  |- dockerfiles/$image/    # Dockerfile for images
 ```
