@@ -36,10 +36,10 @@ compile-go-carbon: image-exists-compiler
 	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler go-carbon v0.9.1
 
 compile-carbonzipper: image-exists-compiler
-	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler carbonzipper
+	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler carbonzipper openmetric
 
 compile-carbonapi: image-exists-compiler
-	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler carbonapi
+	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler carbonapi openmetric
 
 compile-grafana: image-exists-compiler
 	docker run -it --rm -v ${PWD}/binary:/binary openmetric/compiler grafana v4.1.2
