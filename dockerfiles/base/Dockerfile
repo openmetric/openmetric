@@ -7,6 +7,8 @@ RUN yum install -y gcc \
 	&& gcc -Wall -Werror -g -o /usr/bin/su-exec /tmp/su-exec.c \
 	&& rm -f /tmp/su-exec.c \
 	&& yum autoremove -y gcc \
+	# carbonapi requires cairo for png rendering
+	&& yum install -y cairo \
 	# put docs, conf templates, examples, etc. here
 	&& mkdir -p /usr/share/openmetric
 

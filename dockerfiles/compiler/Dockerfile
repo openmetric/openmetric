@@ -29,6 +29,10 @@ RUN yum install -y \
 		# other tools need for compiling
 		git make gcc bison \
 		bzip2 \
+		# carbonapi requires cairo to enable png marshalling
+		cairo-devel \
+		# `go get -tags cairo` requires `hg` to get some dependencies
+		mercurial \
 	# yarn is required for compiling grafana
 	&& npm install -g yarn
 

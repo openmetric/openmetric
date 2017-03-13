@@ -124,7 +124,7 @@ compile_carbonapi() {
     clone_git_repo $repo_url $src_dir $rev
     rev=$(get_git_rev $src_dir $rev)
 
-    go get -v github.com/dgryski/carbonapi
+    go get -v -tags cairo github.com/dgryski/carbonapi
     install -v -D -m 755 $GOPATH/bin/carbonapi $output-$rev-$(os)
     ln -snf $(basename $output-$rev-$(os)) $output
 
