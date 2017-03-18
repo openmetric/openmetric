@@ -1,7 +1,7 @@
 FROM openmetric/base:centos
 MAINTAINER Zhang Cheng <zhangcheng@cmss.chinamobile.com>
 
-ENV CARBON_C_RELAY_VERSION=5a15c5b \
+ENV CARBON_C_RELAY_VERSION=e749aee \
 	GO_CARBON_VERSION=v0.9.1 \
 	CARBONZIPPER_VERSION=a972ec5 \
 	CARBONAPI_VERSION=e6356f3 \

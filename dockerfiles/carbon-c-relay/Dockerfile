@@ -1,7 +1,7 @@
 FROM openmetric/base:centos
 MAINTAINER Zhang Cheng <zhangcheng@cmss.chinamobile.com>
 
-ENV CARBON_C_RELAY_VERSION=5a15c5b
+ENV CARBON_C_RELAY_VERSION=e749aee
 
 ENV \
     # by default, we use 4 worker threads
