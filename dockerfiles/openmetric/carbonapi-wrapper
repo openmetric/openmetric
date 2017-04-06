@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# official carbonapi does not support config file, all settings are set via command
+# line args, which makes it hard to create fixed supervisor program:x block.
+# This wrapper script parses a configuration file and start carbonapi correspondingly.
+
+source "$1"
+exec carbonapi \
+    -z "$ZIPPER_URL" \
+    -p "$LISTEN_PORT" \
+    -graphite "$GRAPHITE_URL" \
+    -logdir /openmetric/log/ \
+    -prefix openmetric.api
