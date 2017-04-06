@@ -31,32 +31,34 @@ RUN yum install -y gcc \
 	&& yum install -y supervisor \
 	&& sed -i 's/nodaemon=false/nodaemon=true/g' /etc/supervisord.conf \
 	&& sed -i 's@logfile=[^ ]\+@logfile=/openmetric/log/supervisord.log@g' /etc/supervisord.conf \
-	&& chown openmetric:openmetric /var/run/supervisor/
+	&& chown openmetric:openmetric /var/run/supervisor/ \
+	&& yum clean all
 
 # Install binaries
 COPY binary/carbon-c-relay/carbon-c-relay-${CARBON_C_RELAY_VERSION}-centos /usr/bin/carbon-c-relay
 COPY binary/go-carbon/go-carbon-${GO_CARBON_VERSION}-centos /usr/bin/go-carbon
 COPY binary/carbonzipper/carbonzipper-${CARBONZIPPER_VERSION}-centos /usr/bin/carbonzipper
 COPY binary/carbonapi/carbonapi-${CARBONAPI_VERSION}-centos /usr/bin/carbonapi
-COPY dockerfiles/openmetric/carbonapi-wrapper /usr/bin/carbonapi-wrapper
-COPY dockerfiles/openmetric/entry.sh /entry.sh
+COPY dockerfiles/graphite-stack/carbonapi-wrapper /usr/bin/carbonapi-wrapper
+COPY dockerfiles/graphite-stack/entry.sh /entry.sh
 
 # Add supervisor conf files
-COPY dockerfiles/openmetric/supervisor.d /openmetric/supervisor.d
+COPY dockerfiles/graphite-stack/supervisor.d /openmetric/supervisor.d
 
 # Directory Layout
 # /openmetric/
 #   |- conf/
 #       |- relay.conf, carbon.conf, schemas.conf, zipper.conf, supervisor.conf
 #   |- log/
-#       |- relay.log, carbon.log, zipper.log, api.log, supervisor.log
+#       |- relay.log, carbon.log, zipper.log, api.log, supervisord.log
 #   |- data/
 #       |- whisper
-# We do NOT include default configuration file in the image, use should always bind a conf volume
 RUN mkdir -p /openmetric/conf /openmetric/log /openmetric/data \
 	&& chown openmetric:openmetric -R /openmetric/
-
 VOLUME ["/openmetric/conf", "/openmetric/log", "/openmetric/data"]
+
+# Add default configuration files
+COPY example-conf/standalone/ /usr/share/openmetric/default-conf/
 
 # Since we don't assume which components user would enable, we just expose enough ports
 # and let use deside which to use.

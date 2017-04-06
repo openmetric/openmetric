@@ -6,44 +6,25 @@ In the long term, we will enhance the stack so it can scale more easily.
 
 # Docker images
 
-There are several images you can choose from.
+Currently only a graphite-stack image is provided.
 
-**openmetric/standalone-vanilla** is composed of official graphite components (i.e.
-[carbon-relay.py](https://github.com/graphite-project/carbon/blob/master/bin/carbon-relay.py),
-[carbon-aggregator.py](https://github.com/graphite-project/carbon/blob/master/bin/carbon-aggregator.py),
-[carbon-cache.py](https://github.com/graphite-project/carbon/blob/master/bin/carbon-cache.py),
-[graphite-web](https://github.com/graphite-project/graphite-web)
-).
-This should be enough for a small setup (less than 500 servers, depends on your hardware and metric volume).
-This images exposes two interfaces, carbon-relay to accept metrics, and graphite-web for querying and graphing.
-
-**openmetric/standalone** uses third-party implementation written in golang to replace the official one.
+**openmetric/graphite-stack** uses third-party implementation written in golang and C to replace the official one.
 Currently they are
 [carbon-c-relay](https://github.com/grobian/carbon-c-relay),
 [go-carbon](https://github.com/lomik/go-carbon),
 [carbonzipper](https://github.com/dgryski/carbonzipper),
 [carbonapi](https://github.com/dgryski/carbonapi),
-[grafana](https://github.com/grafana/grafana).
-
-**openmetric/$component** is series of images contain just one component, so you can choose and deploy freely.
-
-**openmetric/cluster** is a planned image, it aims to make clustering easier, you can run this same image on all cluster nodes,
-with just a few parameters to set up a running cluster.
 
 ## Quick start
 
 Start an openmetric instance:
 
 ```
-docker run -d --name openmetric -p 2003:2003 -p 3000:3000 -p 5000:5000 openmetric/standalone
+docker run -d --name openmetric -p 2003:2003 -p 5000:5000 openmetric/graphite-stack standalone
 ```
 
-Visit ``http://openmetric-host:3000/``, you should see the grafana interface. Grafana default user is
-`admin`, default password is generated randomly on initial start, you can find in docker logs:
-
-```
-docker logs openmetric | grep 'admin password'
-```
+carbon-c-relay by default listens on port 2003, receives metrics in plain text protocol.
+carbonapi listens on port 5000, provides metric rendering api.
 
 It's time to push metrics to openmetric. Let's generate a series of random int values at 10s interval:
 
@@ -53,16 +34,31 @@ while true; do
 done | nc openmetric-host 2003
 ```
 
-You can now create dashboard in grafana, and start drawing graphs. Data source is registered on initial run.
+You can now read the data though api interface:
+
+```
+curl 'http://openmetric-host:5000/render/?target=test.random.int&format=json'
+```
 
 ## Directory layout in images
 
-To make it easy to maintain the containers, we try to make directory layout consistent in all images.
+To make it easy to maintain the containers, we try to make directory layout in a consistent way.
 
-All variable data are stored in ``/openmetric/$component/data``, configuration files are stored in
-``/openmetric/$component/conf``, log files are stored in ``/openmetric/$component/log``.
+All runtime files (log, conf, data etc.) are all stored in ``/openmetric``, the layout is:
 
-Runnable binaries, scripts, libraries are installed in the system location (i.e. ``/usr`` or ``/usr/local``),
+```
+/openmetric/
+  |- conf/
+      |- relay.conf, carbon.conf, schemas.conf, zipper.conf
+  |- log/
+      |- relay.log, carbon.log, zipper.log, api.log, supervisord.log
+  |- data/
+      |- whisper
+```
+
+Although we provided a default set of configuration files, you are always encouraged to provide your own.
+
+Runnable binaries, scripts, libraries are installed in the system location (i.e. ``/usr/bin``),
 so there will be less problems with ``PATH`` env.
 
 

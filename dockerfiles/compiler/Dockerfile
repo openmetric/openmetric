@@ -20,24 +20,15 @@ RUN mkdir /cache \
 			;fi \
 		&& rm -rf /cache
 
-RUN yum install -y \
-		# nodejs package is in nodejs
-		epel-release \
+RUN yum install -y epel-release \
 	&& yum install -y \
-		# nodejs is required for compiling grafana
-		nodejs \
 		# other tools need for compiling
 		git make gcc bison \
 		bzip2 \
 		# carbonapi requires cairo to enable png marshalling
 		cairo-devel \
 		# `go get -tags cairo` requires `hg` to get some dependencies
-		mercurial \
-	# yarn is required for compiling grafana
-	&& npm install -g yarn
-
-# install other compiler tools
-RUN yum install -y git make gcc bison
+		mercurial
 
 # the compiled binaries will be copied to /binary directory
 VOLUME ["/binary"]

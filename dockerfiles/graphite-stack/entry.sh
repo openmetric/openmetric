@@ -7,22 +7,33 @@ set -e
 # data volume to the container, in which case these directories are supposed to be empty.
 if [[ "$(id -u)" -eq 0 ]]; then
     chown openmetric:openmetric /openmetric/data/ /openmetric/log/
-    #exec su-exec openmetric $0 "$@"
 fi
 
 help() {
     echo "Usage:"
     echo "    Run specific components:"
-    echo "        docker run -v conf:/openmetric/conf ... openmetric/openmetric [relay] [carbon] [api]"
+    echo "        docker run -v conf:/openmetric/conf ... openmetric/graphite-stack [relay] [carbon] [api]"
+    echo ""
+    echo "    Run standalone mode:"
+    echo "        docker run ... openmetric/graphite-stack standalone"
     echo ""
     echo "    Run system command:"
-    echo "        docker run -v conf:/openmetric/conf ... openmetric/openmetric <command-in-path> [<command-options>]"
+    echo "        docker run ... openmetric/graphite-stack <command-in-path> [<command-options>]"
 }
 
 assert_file_exist() {
     if ! test -f "$1"; then
         echo "Required file does not exist: $1"
         exit 1
+    fi
+}
+
+copy_default_conf_if_not_exist() {
+    conffile="/openmetric/conf/$1"
+    dftfile="/usr/share/openmetric/default-conf/$1"
+    if ! test -f "$conffile"; then
+        echo "Config file \"$conffile\" does not exist, using default"
+        cp "$dftfile" "$conffile"
     fi
 }
 
@@ -51,6 +62,12 @@ while [[ "$#" -gt 0 ]]; do
             echo "Enabling carbonapi (carbonzipper is always enabled together with carbonapi)"
             ENABLE_API=true
             ;;
+        standalone)
+            echo "Standalone mode, enable carbon-c-relay, go-carbon and carbonapi"
+            ENABLE_RELAY=true
+            ENABLE_CARBON=true
+            ENABLE_API=true
+            ;;
         *)
             if [[ "$first_arg" == "true" ]]; then
                 if command -v "$1" >/dev/null; then
@@ -69,19 +86,19 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 if [[ "$ENABLE_CARBON" == "true" ]]; then
-    assert_file_exist /openmetric/conf/carbon.conf
-    assert_file_exist /openmetric/conf/schemas.conf
+    copy_default_conf_if_not_exist carbon.conf
+    copy_default_conf_if_not_exist schemas.conf
     ln -snf /openmetric/supervisor.d/carbon.ini /etc/supervisord.d/carbon.ini
 fi
 
 if [[ "$ENABLE_RELAY" == "true" ]]; then
-    assert_file_exist /openmetric/conf/relay.conf
+    copy_default_conf_if_not_exist relay.conf
     ln -snf /openmetric/supervisor.d/relay.ini /etc/supervisord.d/relay.ini
 fi
 
 if [[ "$ENABLE_API" == "true" ]]; then
-    assert_file_exist /openmetric/conf/zipper.conf
-    assert_file_exist /openmetric/conf/api.conf
+    copy_default_conf_if_not_exist zipper.conf
+    copy_default_conf_if_not_exist api.conf
     ln -snf /openmetric/supervisor.d/api.ini /etc/supervisord.d/api.ini
 fi
 
