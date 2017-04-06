@@ -43,7 +43,7 @@ COPY dockerfiles/graphite-stack/carbonapi-wrapper /usr/bin/carbonapi-wrapper
 COPY dockerfiles/graphite-stack/entry.sh /entry.sh
 
 # Add supervisor conf files
-COPY dockerfiles/graphite-stack/supervisor.d /openmetric/supervisor.d
+COPY dockerfiles/graphite-stack/supervisor.d /usr/share/openmetric/supervisor.d
 
 # Directory Layout
 # /openmetric/

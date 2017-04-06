@@ -88,18 +88,18 @@ done
 if [[ "$ENABLE_CARBON" == "true" ]]; then
     copy_default_conf_if_not_exist carbon.conf
     copy_default_conf_if_not_exist schemas.conf
-    ln -snf /openmetric/supervisor.d/carbon.ini /etc/supervisord.d/carbon.ini
+    ln -snf /usr/share/openmetric/supervisor.d/carbon.ini /etc/supervisord.d/carbon.ini
 fi
 
 if [[ "$ENABLE_RELAY" == "true" ]]; then
     copy_default_conf_if_not_exist relay.conf
-    ln -snf /openmetric/supervisor.d/relay.ini /etc/supervisord.d/relay.ini
+    ln -snf /usr/share/openmetric/supervisor.d/relay.ini /etc/supervisord.d/relay.ini
 fi
 
 if [[ "$ENABLE_API" == "true" ]]; then
     copy_default_conf_if_not_exist zipper.conf
     copy_default_conf_if_not_exist api.conf
-    ln -snf /openmetric/supervisor.d/api.ini /etc/supervisord.d/api.ini
+    ln -snf /usr/share/openmetric/supervisor.d/api.ini /etc/supervisord.d/api.ini
 fi
 
 exec su-exec openmetric supervisord -c /etc/supervisord.conf
