@@ -6,8 +6,8 @@
 
 source "$1"
 exec carbonapi \
-    -z "$ZIPPER_URL" \
-    -p "$LISTEN_PORT" \
-    -graphite "$GRAPHITE_URL" \
-    -logdir /openmetric/log/ \
-    -prefix openmetric.api
+    -z "${ZIPPER_URL:-http://127.0.0.1:8080}" \
+    -p "${LISTEN_PORT:-5000}" \
+    -graphite "${GRAPHITE_URL:-127.0.0.1:2003}" \
+    -prefix "${INTERNAL_METRIC_PREFIX:-openmetric.carbonapi}" \
+    -logdir /openmetric/log/
