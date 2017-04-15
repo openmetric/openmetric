@@ -40,6 +40,13 @@ case "$image_type" in
         assert_conf_exist api.yaml
         exec su-exec openmetric carbonapi -config $CONF/api.yaml
         ;;
+    tools)
+        if command -v "$1" 2>/dev/null; then
+            exec su-exec openmetric "$@"
+        else
+            exec su-exec openmetric bash
+        fi
+        ;;
     *)
         echo "Unknown image type: $image_type"
         exit 1

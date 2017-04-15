@@ -16,23 +16,7 @@ else
 fi
 
 should_install() {
-    case "$1" in
-        carbon-c-relay)
-            [ -n "$CARBON_C_RELAY_VERSION" ] && return 0 || return 1
-            ;;
-        go-carbon)
-            [ -n "$GO_CARBON_VERSION" ] && return 0 || return 1
-            ;;
-        carbonzipper)
-            [ -n "$CARBONZIPPER_VERSION" ] && return 0 || return 1
-            ;;
-        carbonapi)
-            [ -n "$CARBONAPI_VERSION" ] && return 0 || return 1
-            ;;
-        *)
-            return 1
-            ;;
-    esac
+    [ "$IMAGE_TYPE" == "$1" ] && return 0 || return 1
 }
 
 should_install_any() {
@@ -55,17 +39,6 @@ should_install_all() {
     return 0
 }
 
-should_install_count() {
-    count=0
-    while [ "$#" -gt 0 ]; do
-        if should_install $1; then
-            count=$((count+1))
-        fi
-        shift
-    done
-    echo $count
-}
-
 setup_runtime_env() {
     # create openmetric user with specific UID, this uid should:
     # * unlikely to exist on host env, so the volume data won't be writable to
@@ -73,6 +46,10 @@ setup_runtime_env() {
     # * be fixed, so when never the docker image updates, files in volumes won't
     #   have wrong permissions.
     adduser -u 990 -g 990 -D -s /bin/sh -h /openmetric openmetric
+
+    if should_install tools; then
+        apk add $MIRROR --no-cache python bash
+    fi
 
     # install su-exec
     apk add $MIRROR --no-cache su-exec
@@ -96,6 +73,10 @@ setup_build_env() {
         BUILD_DEPS="$BUILD_DEPS cairo-dev gcc libc-dev"
     fi
 
+    if should_install tools; then
+        BUILD_DEPS="$BUILD_DEPS py-pip build-base python-dev"
+    fi
+
     # install build requirements
     apk add $MIRROR --no-cache --virtual .build-deps $BUILD_DEPS
 
@@ -116,6 +97,11 @@ cleanup_build_env() {
 
     # remove golang
     rm -rf /usr/local/go $GOPATH
+
+    # cleanup python pyc files
+    find /usr/lib/python2.7/ -name '*.py[co]' -delete || true
+    find /usr/lib/python2.7/ -name 'test_*.py' -delete || true
+    find /usr/lib/python2.7/ -name 'test_*.py[co]' -delete || true
 
     # remove all build cache
     rm -rf /build
@@ -164,7 +150,6 @@ compile_and_install_carbonzipper() {
 
     echo "Compiling carbonzipper ..."
     clone_git_repo $repo_url $src_dir $CARBONZIPPER_VERSION
-    # UGLY FIX: dep ensure would fail for the first time
     (cd $src_dir; make)
 
     echo "Installing carbonzipper ..."
@@ -179,7 +164,6 @@ compile_and_install_carbonapi() {
 
     echo "Compiling carbonapi ..."
     clone_git_repo $repo_url $src_dir $CARBONAPI_VERSION
-    # UGLY FIX: dep ensure would fail for the first time
     (cd $src_dir; make)
 
     echo "Installing carbonapi ..."
@@ -189,45 +173,66 @@ compile_and_install_carbonapi() {
     apk add $MIRROR --no-cache cairo
 }
 
-determine_image_type() {
-    if [ $(should_install_count carbon-c-relay go-carbon carbonzipper carbonapi) -ne 1 ]; then
-        echo "Only one or all component can be installed"
-        exit 1
-    fi
-
-    for comp in carbon-c-relay go-carbon carbonzipper carbonapi; do
-        if should_install $comp; then
-            echo $comp
-            return
-        fi
-    done
+compile_and_install_tools() {
+    pip install whisper==$WHISPER_VERSION
+    pip install \
+        --install-option="--prefix=/usr/share/graphite" \
+        --install-option="--install-lib=/usr/lib/python2.7/site-packages" \
+        --install-option="--install-data=/var/lib/graphite" \
+        --install-option="--install-scripts=/usr/bin" \
+        carbonate==$CARBONATE_VERSION
 }
 
-compile_and_install() {
-    local image_type=$(determine_image_type)
-    echo "$image_type" > /image-type
-
-    case "$image_type" in
-        carbon-c-relay)
-            compile_and_install_carbon_c_relay
-            ;;
-        go-carbon)
-            compile_and_install_go_carbon
-            ;;
-        carbonzipper)
-            compile_and_install_carbonzipper
-            ;;
-        carbonapi)
-            compile_and_install_carbonapi
-            ;;
-        *)
-            echo "Unknown image type"
+# check build args
+case "$IMAGE_TYPE" in
+    carbon-c-relay)
+        if [ -z "$CARBON_C_RELAY_VERSION" ]; then
+            echo "Missing build arg: CARBON_C_RELAY_VERSION"
             exit 1
-            ;;
-    esac
-}
+        fi
+        _COMPILE=compile_and_install_carbon_c_relay
+        ;;
+    go-carbon)
+        if [ -z "$GO_CARBON_VERSION" ]; then
+            echo "Missing build arg: GO_CARBON_VERSION"
+            exit 1
+        fi
+        _COMPILE=compile_and_install_go_carbon
+        ;;
+    carbonzipper)
+        if [ -z "$CARBONZIPPER_VERSION" ]; then
+            echo "Missing build arg: CARBONZIPPER_VERSION"
+            exit 1
+        fi
+        _COMPILE=compile_and_install_carbonzipper
+        ;;
+    carbonapi)
+        if [ -z "$CARBONAPI_VERSION" ]; then
+            echo "Missing build arg: CARBONAPI_VERSION"
+            exit 1
+        fi
+        _COMPILE=compile_and_install_carbonapi
+        ;;
+    tools)
+        if [ -z "$WHISPER_VERSION" ]; then
+            echo "Missing build arg WHISPER_VERSION"
+            exit 1
+        fi
+        if [ -z "$CARBONATE_VERSION" ]; then
+            echo "Missing build arg CARBONATE_VERSION"
+            exit 1
+        fi
+        _COMPILE=compile_and_install_tools
+        ;;
+    *)
+        echo "Unknown image type: $IMAGE_TYPE"
+        exit 1
+        ;;
+esac
+
+echo "$IMAGE_TYPE" > /image-type
 
 setup_runtime_env
 setup_build_env
-compile_and_install
+$_COMPILE
 cleanup_build_env

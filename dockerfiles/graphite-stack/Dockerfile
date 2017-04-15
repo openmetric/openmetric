@@ -2,10 +2,13 @@ FROM frolvlad/alpine-glibc:alpine-3.5
 MAINTAINER Zhang Cheng <zhangcheng@cmss.chinamobile.com>
 
 # This Dockerfile is used to produce multiple images, controlled via build args
+ARG IMAGE_TYPE
 ARG CARBON_C_RELAY_VERSION
 ARG GO_CARBON_VERSION
 ARG CARBONZIPPER_VERSION
 ARG CARBONAPI_VERSION
+ARG WHISPER_VERSION
+ARG CARBONATE_VERSION
 
 # if specified, apk will be instructed to use a local mirror to speed up image building
 ARG LOCAL_APK_MIRROR
