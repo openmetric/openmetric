@@ -20,6 +20,11 @@ assert_conf_exist() {
     fi
 }
 
+# if a command is provided, run that command
+if command -v "$1" 2>/dev/null; then
+    exec su-exec "$@"
+fi
+
 image_type=$(cat /image-type)
 
 case "$image_type" in

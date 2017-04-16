@@ -10,9 +10,9 @@ export GOPATH=/go
 export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 
 if [ -n "$LOCAL_APK_MIRROR" ]; then
-    MIRROR="--repository $LOCAL_APK_MIRROR"
+    apk_add="apk add --repository $LOCAL_APK_MIRROR --no-cache"
 else
-    MIRROR=""
+    apk_add="apk add --no-cache"
 fi
 
 should_install() {
@@ -47,12 +47,13 @@ setup_runtime_env() {
     #   have wrong permissions.
     adduser -u 990 -g 990 -D -s /bin/sh -h /openmetric openmetric
 
+    # the tools image requires python, and provide bash for better interactive experience
     if should_install tools; then
-        apk add $MIRROR --no-cache python bash
+        $apk_add python bash
     fi
 
-    # install su-exec
-    apk add $MIRROR --no-cache su-exec
+    # use su-exec to switch user
+    $apk_add su-exec
 
     # create directory layout
     mkdir -p /openmetric/conf /openmetric/log /openmetric/data
@@ -77,8 +78,8 @@ setup_build_env() {
         BUILD_DEPS="$BUILD_DEPS py-pip build-base python-dev"
     fi
 
-    # install build requirements
-    apk add $MIRROR --no-cache --virtual .build-deps $BUILD_DEPS
+    # install build dependencies
+    $apk_add --virtual .build-deps $BUILD_DEPS
 
     if should_install_any go-carbon carbonzipper carbonapi; then
         echo "Installing go $GOLANG_VERSION ..."
@@ -91,14 +92,16 @@ setup_build_env() {
 
 # removes packages not needed for final images
 cleanup_build_env() {
-    # remove build requirements
+    # remove build dependencies
     apk del .build-deps
+
+    # clear apk caches
     rm -rf /var/cache/apk/*
 
-    # remove golang
+    # remove golang, not needed for running go compiled applications
     rm -rf /usr/local/go $GOPATH
 
-    # cleanup python pyc files
+    # cleanup python py compiled files, this saves significant space
     find /usr/lib/python2.7/ -name '*.py[co]' -delete || true
     find /usr/lib/python2.7/ -name 'test_*.py' -delete || true
     find /usr/lib/python2.7/ -name 'test_*.py[co]' -delete || true
@@ -118,7 +121,7 @@ clone_git_repo() {
     (cd $src_dir && git checkout $rev)
 }
 
-compile_and_install_carbon_c_relay() {
+install_carbon_c_relay() {
     local repo_url=https://github.com/grobian/carbon-c-relay.git
     local src_dir=/build/carbon-c-relay
 
@@ -130,7 +133,7 @@ compile_and_install_carbon_c_relay() {
     install -v -D -m 755 $src_dir/relay /usr/bin/carbon-c-relay
 }
 
-compile_and_install_go_carbon() {
+install_go_carbon() {
     local repo_url=https://github.com/lomik/go-carbon.git
     local src_dir=/build/go-carbon
 
@@ -142,7 +145,7 @@ compile_and_install_go_carbon() {
     install -v -D -m 755 $src_dir/go-carbon /usr/bin/go-carbon
 }
 
-compile_and_install_carbonzipper() {
+install_carbonzipper() {
     #git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/go-graphite/carbonapi
     #git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/go-graphite/carbonzipper
     local repo_url=https://github.com/go-graphite/carbonzipper.git
@@ -150,13 +153,13 @@ compile_and_install_carbonzipper() {
 
     echo "Compiling carbonzipper ..."
     clone_git_repo $repo_url $src_dir $CARBONZIPPER_VERSION
-    (cd $src_dir; make)
+    (cd $src_dir && make)
 
     echo "Installing carbonzipper ..."
     install -v -D -m 755 $src_dir/carbonzipper /usr/bin/carbonzipper
 }
 
-compile_and_install_carbonapi() {
+install_carbonapi() {
     #git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/go-graphite/carbonapi
     #git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/go-graphite/carbonzipper
     local repo_url=https://github.com/go-graphite/carbonapi.git
@@ -164,16 +167,16 @@ compile_and_install_carbonapi() {
 
     echo "Compiling carbonapi ..."
     clone_git_repo $repo_url $src_dir $CARBONAPI_VERSION
-    (cd $src_dir; make)
+    (cd $src_dir && make)
 
     echo "Installing carbonapi ..."
     install -v -D -m 755 $src_dir/carbonapi /usr/bin/carbonapi
 
     # carbonapi requires cairo to support png/svg rendering
-    apk add $MIRROR --no-cache cairo
+    $apk_add cairo
 }
 
-compile_and_install_tools() {
+install_tools() {
     pip install whisper==$WHISPER_VERSION
     pip install \
         --install-option="--prefix=/usr/share/graphite" \
@@ -183,46 +186,38 @@ compile_and_install_tools() {
         carbonate==$CARBONATE_VERSION
 }
 
+require_build_arg() {
+    ARG_NAME="$1"
+    eval ARG_VALUE=\$$ARG_NAME
+
+    if [ -z "$ARG_VALUE" ]; then
+        echo "Missing build arg: $ARG_NAME"
+        exit 1
+    fi
+}
+
 # check build args
 case "$IMAGE_TYPE" in
     carbon-c-relay)
-        if [ -z "$CARBON_C_RELAY_VERSION" ]; then
-            echo "Missing build arg: CARBON_C_RELAY_VERSION"
-            exit 1
-        fi
-        _COMPILE=compile_and_install_carbon_c_relay
+        require_build_arg CARBON_C_RELAY_VERSION
+        install=install_carbon_c_relay
         ;;
     go-carbon)
-        if [ -z "$GO_CARBON_VERSION" ]; then
-            echo "Missing build arg: GO_CARBON_VERSION"
-            exit 1
-        fi
-        _COMPILE=compile_and_install_go_carbon
+        require_build_arg GO_CARBON_VERSION
+        install=install_go_carbon
         ;;
     carbonzipper)
-        if [ -z "$CARBONZIPPER_VERSION" ]; then
-            echo "Missing build arg: CARBONZIPPER_VERSION"
-            exit 1
-        fi
-        _COMPILE=compile_and_install_carbonzipper
+        require_build_arg CARBONZIPPER_VERSION
+        install=install_carbonzipper
         ;;
     carbonapi)
-        if [ -z "$CARBONAPI_VERSION" ]; then
-            echo "Missing build arg: CARBONAPI_VERSION"
-            exit 1
-        fi
-        _COMPILE=compile_and_install_carbonapi
+        require_build_arg CARBONAPI_VERSION
+        install=install_carbonapi
         ;;
     tools)
-        if [ -z "$WHISPER_VERSION" ]; then
-            echo "Missing build arg WHISPER_VERSION"
-            exit 1
-        fi
-        if [ -z "$CARBONATE_VERSION" ]; then
-            echo "Missing build arg CARBONATE_VERSION"
-            exit 1
-        fi
-        _COMPILE=compile_and_install_tools
+        require_build_arg WHISPER_VERSION
+        require_build_arg CARBONATE_VERSION
+        install=install_tools
         ;;
     *)
         echo "Unknown image type: $IMAGE_TYPE"
@@ -234,5 +229,5 @@ echo "$IMAGE_TYPE" > /image-type
 
 setup_runtime_env
 setup_build_env
-$_COMPILE
+$install
 cleanup_build_env

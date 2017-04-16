@@ -14,36 +14,36 @@ build-carbon-c-relay:
 		--build-arg IMAGE_TYPE=carbon-c-relay \
 		--build-arg LOCAL_APK_MIRROR=$(LOCAL_APK_MIRROR) \
 		--build-arg CARBON_C_RELAY_VERSION=$(CARBON_C_RELAY_VERSION) \
-		-t openmetric/carbon-c-relay:$(BUILD_DATE)-$(CARBON_C_RELAY_VERSION) \
+		-t openmetric/carbon-c-relay:$(CARBON_C_RELAY_VERSION) \
 		dockerfiles/graphite-stack/
-	docker tag openmetric/carbon-c-relay:$(BUILD_DATE)-$(CARBON_C_RELAY_VERSION) openmetric/carbon-c-relay:latest
+	docker tag openmetric/carbon-c-relay:$(CARBON_C_RELAY_VERSION) openmetric/carbon-c-relay:latest
 
 build-go-carbon:
 	docker build \
 		--build-arg IMAGE_TYPE=go-carbon \
 		--build-arg LOCAL_APK_MIRROR=$(LOCAL_APK_MIRROR) \
 		--build-arg GO_CARBON_VERSION=$(GO_CARBON_VERSION) \
-		-t openmetric/go-carbon:$(BUILD_DATE)-$(GO_CARBON_VERSION) \
+		-t openmetric/go-carbon:$(GO_CARBON_VERSION) \
 		dockerfiles/graphite-stack/
-	docker tag openmetric/go-carbon:$(BUILD_DATE)-$(GO_CARBON_VERSION) openmetric/go-carbon:latest
+	docker tag openmetric/go-carbon:$(GO_CARBON_VERSION) openmetric/go-carbon:latest
 
 build-carbonzipper:
 	docker build \
 		--build-arg IMAGE_TYPE=carbonzipper \
 		--build-arg LOCAL_APK_MIRROR=$(LOCAL_APK_MIRROR) \
 		--build-arg CARBONZIPPER_VERSION=$(CARBONZIPPER_VERSION) \
-		-t openmetric/carbonzipper:$(BUILD_DATE)-$(CARBONZIPPER_VERSION) \
+		-t openmetric/carbonzipper:$(CARBONZIPPER_VERSION) \
 		dockerfiles/graphite-stack/
-	docker tag openmetric/carbonzipper:$(BUILD_DATE)-$(CARBONZIPPER_VERSION) openmetric/carbonzipper:latest
+	docker tag openmetric/carbonzipper:$(CARBONZIPPER_VERSION) openmetric/carbonzipper:latest
 
 build-carbonapi:
 	docker build \
 		--build-arg IMAGE_TYPE=carbonapi \
 		--build-arg LOCAL_APK_MIRROR=$(LOCAL_APK_MIRROR) \
 		--build-arg CARBONAPI_VERSION=$(CARBONAPI_VERSION) \
-		-t openmetric/carbonapi:$(BUILD_DATE)-$(CARBONAPI_VERSION) \
+		-t openmetric/carbonapi:$(CARBONAPI_VERSION) \
 		dockerfiles/graphite-stack/
-	docker tag openmetric/carbonapi:$(BUILD_DATE)-$(CARBONAPI_VERSION) openmetric/carbonapi:latest
+	docker tag openmetric/carbonapi:$(CARBONAPI_VERSION) openmetric/carbonapi:latest
 
 build-tools:
 	docker build \
