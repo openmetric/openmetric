@@ -33,3 +33,11 @@ services:
       - openmetric_quickstart
     ports:
       - "5000:5000"
+  grafana:
+    image: openmetric/grafana
+    volumes:
+      - ./conf:/openmetric/conf
+    networks:
+      - openmetric_quickstart
+    ports:
+      - "3000:3000"

@@ -22,7 +22,7 @@ assert_conf_exist() {
 
 # if a command is provided, run that command
 if command -v "$1" 2>/dev/null; then
-    exec su-exec "$@"
+    exec su-exec openmetric "$@"
 fi
 
 image_type=$(cat /image-type)
@@ -44,6 +44,15 @@ case "$image_type" in
     carbonapi)
         assert_conf_exist api.conf
         exec su-exec openmetric carbonapi -config $CONF/api.conf
+        ;;
+    grafana)
+        assert_conf_exist grafana.conf
+        exec su-exec openmetric grafana-server \
+            --homepath=/usr/share/grafana \
+            --config=$CONF/grafana.conf \
+            cfg:default.paths.data="/openmetric/data/grafana" \
+            cfg:default.paths.logs="/openmetric/grafana/log" \
+            cfg:default.paths.plugins="/openmetric/data/grafana-plugins"
         ;;
     tools)
         if command -v "$1" 2>/dev/null; then

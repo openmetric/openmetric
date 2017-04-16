@@ -1,4 +1,4 @@
-FROM frolvlad/alpine-glibc:alpine-3.5
+FROM alpine:3.5
 MAINTAINER Zhang Cheng <zhangcheng@cmss.chinamobile.com>
 
 # This Dockerfile is used to produce multiple images, controlled via `IMAGE_TYPE` arg,
@@ -13,9 +13,12 @@ ARG CARBONZIPPER_VERSION
 ARG CARBONAPI_VERSION
 ARG WHISPER_VERSION
 ARG CARBONATE_VERSION
+ARG GRAFANA_VERSION
 
 # if specified, apk will be instructed to use a local mirror to speed up image building
 ARG LOCAL_APK_MIRROR
+ARG LOCAL_NPM_MIRROR
+ARG LOCAL_NPM_DISTURL_MIRROR
 
 ADD build.sh /build.sh
 RUN /build.sh && rm -f /build.sh
@@ -29,6 +32,8 @@ VOLUME ["/openmetric/conf", "/openmetric/log", "/openmetric/data"]
 
 # recommended for carbon-c-relay plain text protocol interface
 EXPOSE 2003 2003/udp
+# recommended for grafana http interface
+EXPOSE 3000
 # recommended for carbonapi http interface
 EXPOSE 5000
 # recommended for other components

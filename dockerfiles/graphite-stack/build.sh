@@ -9,10 +9,13 @@ export GOLANG_DOWNLOAD_SHA256=53ab94104ee3923e228a2cb2116e5e462ad3ebaeea06ff0446
 export GOPATH=/go
 export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 
+mkdir /build
+
 if [ -n "$LOCAL_APK_MIRROR" ]; then
-    apk_add="apk add --repository $LOCAL_APK_MIRROR --no-cache"
-else
-    apk_add="apk add --no-cache"
+    cat /etc/apk/repositories | \
+        sed "s@http://dl-cdn.alpinelinux.org/alpine/@$LOCAL_APK_MIRROR@g" \
+        > /build/repositories
+    alias apk="apk --repositories-file /build/repositories"
 fi
 
 should_install() {
@@ -49,51 +52,86 @@ setup_runtime_env() {
 
     # the tools image requires python, and provide bash for better interactive experience
     if should_install tools; then
-        $apk_add python bash
+        apk add --no-cache python bash
     fi
 
     # use su-exec to switch user
-    $apk_add su-exec
+    apk add --no-cache su-exec libc6-compat
+
+    # setup libc6 compact
+    mkdir -p /lib64
+    ln -s /lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
 
     # create directory layout
     mkdir -p /openmetric/conf /openmetric/log /openmetric/data
     chown openmetric:openmetric -R /openmetric/
 }
 
+setup_npm() {
+    # set cache dir in /build/, so it can be cleanup easily
+    npm config set cache /build/.npm/
+
+    [ -n "$LOCAL_NPM_MIRROR" ] && npm config set registry $LOCAL_NPM_MIRROR
+    [ -n "$LOCAL_NPM_DISTURL_MIRROR" ] && npm config set disturl $LOCAL_NPM_DISTURL_MIRROR
+
+    npm install -g yarn
+    [ -n "$LOCAL_NPM_MIRROR" ] && yarn config set registry $LOCAL_NPM_MIRROR
+
+    # last [] could fail
+    true
+}
+
+setup_golang() {
+    echo "Installing go $GOLANG_VERSION ..."
+    curl -fsSL "$GOLANG_DOWNLOAD_URL" -o /build/golang.tar.gz
+    echo "$GOLANG_DOWNLOAD_SHA256  /build/golang.tar.gz" | sha256sum -c -
+    tar -C /usr/local -zxf /build/golang.tar.gz
+    mkdir -p "$GOPATH/src" "$GOPATH/bin"
+}
+
 # install packages required for compiling packages
 setup_build_env() {
-    mkdir /build
-
     local BUILD_DEPS="git mercurial curl ca-certificates make"
+    local REQUIRE_GOLANG=false
+    local REQUIRE_NPM=false
 
-    if should_install carbon-c-relay; then
-        BUILD_DEPS="$BUILD_DEPS gcc libc-dev bison"
-    fi
-
-    if should_install carbonapi; then
-        BUILD_DEPS="$BUILD_DEPS cairo-dev gcc libc-dev"
-    fi
-
-    if should_install tools; then
-        BUILD_DEPS="$BUILD_DEPS py-pip build-base python-dev"
-    fi
+    case "$IMAGE_TYPE" in
+        carbon-c-relay)
+            BUILD_DEPS="$BUILD_DEPS gcc musl-dev bison flex"
+            ;;
+        go-carbon)
+            REQUIRE_GOLANG=true
+            ;;
+        carbonzipper)
+            REQUIRE_GOLANG=true
+            ;;
+        carbonapi)
+            BUILD_DEPS="$BUILD_DEPS gcc musl-dev cairo-dev"
+            REQUIRE_GOLANG=true
+            ;;
+        grafana)
+            BUILD_DEPS="$BUILD_DEPS nodejs gcc g++"
+            REQUIRE_GOLANG=true
+            REQUIRE_NPM=true
+            ;;
+        tools)
+            BUILD_DEPS="$BUILD_DEPS py-pip build-base python-dev"
+            ;;
+    esac
 
     # install build dependencies
-    $apk_add --virtual .build-deps $BUILD_DEPS
+    apk add --no-cache --virtual .build-deps $BUILD_DEPS
 
-    if should_install_any go-carbon carbonzipper carbonapi; then
-        echo "Installing go $GOLANG_VERSION ..."
-        curl -fsSL "$GOLANG_DOWNLOAD_URL" -o /build/golang.tar.gz
-        echo "$GOLANG_DOWNLOAD_SHA256  /build/golang.tar.gz" | sha256sum -c -
-        tar -C /usr/local -zxf /build/golang.tar.gz
-        mkdir -p "$GOPATH/src" "$GOPATH/bin"
-    fi
+    [ "$REQUIRE_NPM" == "true" ] && setup_npm
+    [ "$REQUIRE_GOLANG" == "true" ] && setup_golang
+
+    true
 }
 
 # removes packages not needed for final images
 cleanup_build_env() {
     # remove build dependencies
-    apk del .build-deps
+    apk del --purge .build-deps
 
     # clear apk caches
     rm -rf /var/cache/apk/*
@@ -108,17 +146,35 @@ cleanup_build_env() {
 
     # remove all build cache
     rm -rf /build
+
+    # some build tools save files in /root/, remove all files under /root
+    find /root -mindepth 1 -maxdepth 1 -exec rm -rf {} \;
+
+    # cleanup other useless directories
+    rm -rf /tmp/*
+    rm -rf /usr/lib/node_modules/
 }
 
 clone_git_repo() {
     local repo_url=$1
     local src_dir=$2
     local rev=$3
+    local fast=$4
 
     echo "Cloning repo: $repo_url, rev: $rev ..."
     mkdir -p $(dirname $src_dir)
-    git clone $repo_url $src_dir
-    (cd $src_dir && git checkout $rev)
+
+    if [ "x$fast" == "xfast" ]; then
+        # mimic git clone --depth 1 ..., assume all repos are on github
+        local repo_name=$(basename ${repo_url%%.git})
+        mkdir /build/git-unzip
+        curl -fsSL ${repo_url%%.git}/archive/${rev}.zip -o /build/${repo_name}.zip
+        unzip -q -d /build/git-unzip /build/${repo_name}.zip
+        mv /build/git-unzip/${repo_name}-* $src_dir
+    else
+        git clone $repo_url $src_dir
+        (cd $src_dir && git checkout $rev)
+    fi
 }
 
 install_carbon_c_relay() {
@@ -126,7 +182,7 @@ install_carbon_c_relay() {
     local src_dir=/build/carbon-c-relay
 
     echo "Compiling carbon-c-relay ..."
-    clone_git_repo $repo_url $src_dir $CARBON_C_RELAY_VERSION
+    clone_git_repo $repo_url $src_dir $CARBON_C_RELAY_VERSION fast
     (cd $src_dir && make relay)
 
     echo "Installing carbon-c-relay"
@@ -173,7 +229,35 @@ install_carbonapi() {
     install -v -D -m 755 $src_dir/carbonapi /usr/bin/carbonapi
 
     # carbonapi requires cairo to support png/svg rendering
-    $apk_add cairo
+    apk add --no-cache cairo
+}
+
+install_grafana() {
+    local repo_url=https://github.com/grafana/grafana.git
+    local src_dir=$GOPATH/src/github.com/grafana/grafana
+
+    echo "Compiling grafana ..."
+    clone_git_repo $repo_url $src_dir $GRAFANA_VERSION fast
+
+    (cd $src_dir \
+        && go run build.go setup \
+        && go run build.go build \
+        && sed -i "/karma:test/d" tasks/build_task.js \
+        && yarn install --pure-lockfile \
+        && ./node_modules/.bin/grunt release
+    )
+
+    echo "Installing grafana ..."
+    install -v -D -m 755 $src_dir/tmp/bin/grafana-server /usr/bin/grafana-server
+    install -v -D -m 755 $src_dir/tmp/bin/grafana-cli /usr/bin/grafana-cli
+    install -v -d -m 755 /usr/share/grafana
+    cp -r $src_dir/tmp/public /usr/share/grafana/public
+    cp -r $src_dir/tmp/conf /usr/share/grafana/conf
+
+    # these cleanup jobs are not suitable to do in global cleanup_build_env()
+    find /usr/share/grafana/ -name '*.js.map' -delete
+    npm uninstall -g yarn
+    npm cache clear
 }
 
 install_tools() {
@@ -213,6 +297,10 @@ case "$IMAGE_TYPE" in
     carbonapi)
         require_build_arg CARBONAPI_VERSION
         install=install_carbonapi
+        ;;
+    grafana)
+        require_build_arg GRAFANA_VERSION
+        install=install_grafana
         ;;
     tools)
         require_build_arg WHISPER_VERSION
