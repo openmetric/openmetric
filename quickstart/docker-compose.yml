@@ -19,12 +19,17 @@ services:
       - openmetric_quickstart
     ports:
       - "2003:2003"
+    depends_on:
+      # relay relies on 'carbon' to be resolved
+      - carbon
   zipper:
     image: openmetric/carbonzipper
     volumes:
       - ./conf:/openmetric/conf
     networks:
       - openmetric_quickstart
+    depends_on:
+      - relay
   api:
     image: openmetric/carbonapi
     volumes:
@@ -33,6 +38,8 @@ services:
       - openmetric_quickstart
     ports:
       - "5000:5000"
+    depends_on:
+      - relay
   grafana:
     image: openmetric/grafana
     volumes:
@@ -41,3 +48,5 @@ services:
       - openmetric_quickstart
     ports:
       - "3000:3000"
+    depends_on:
+      - relay
