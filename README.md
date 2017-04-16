@@ -10,6 +10,7 @@ Currently, we choose the following components for the graphite stack:
 * [go-carbon](https://github.com/lomik/go-carbon)
 * [carbonzipper](https://github.com/go-graphite/carbonzipper)
 * [carbonapi](https://github.com/go-graphite/carbonapi)
+* [grafana](https://github.com/grafana/grafana)
 
 # Docker images
 
@@ -22,6 +23,7 @@ The following images are available:
 * `openmetric/go-carbon`
 * `openmetric/carbonzipper`
 * `openmetric/carbonapi`
+* `openmetric/grafana`
 * `openmetric/tools` This image contains several management tools, currently only
   [carbonate](https://github.com/graphite-project/carbonate) is included.
 
@@ -53,6 +55,8 @@ You can now read the data though api interface:
 ```
 curl 'http://localhost:5000/render/?target=test.random.int&format=json'
 ```
+
+You can also try out grafana, browse http://localhost:3000 , login with `admin:admin` .
 
 ## Directory layout in images
 
