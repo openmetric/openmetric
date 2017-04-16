@@ -18,7 +18,7 @@ build-carbon-c-relay:
 		--build-arg CARBON_C_RELAY_VERSION=$(CARBON_C_RELAY_VERSION) \
 		-t openmetric/carbon-c-relay:$(CARBON_C_RELAY_VERSION) \
 		-t openmetric/carbon-c-relay:latest \
-		dockerfiles/graphite-stack/
+		.
 
 build-go-carbon:
 	docker build \
@@ -27,7 +27,7 @@ build-go-carbon:
 		--build-arg GO_CARBON_VERSION=$(GO_CARBON_VERSION) \
 		-t openmetric/go-carbon:$(GO_CARBON_VERSION) \
 		-t openmetric/go-carbon:latest \
-		dockerfiles/graphite-stack/
+		.
 
 build-carbonzipper:
 	docker build \
@@ -36,7 +36,7 @@ build-carbonzipper:
 		--build-arg CARBONZIPPER_VERSION=$(CARBONZIPPER_VERSION) \
 		-t openmetric/carbonzipper:$(CARBONZIPPER_VERSION) \
 		-t openmetric/carbonzipper:latest \
-		dockerfiles/graphite-stack/
+		.
 
 build-carbonapi:
 	docker build \
@@ -45,7 +45,7 @@ build-carbonapi:
 		--build-arg CARBONAPI_VERSION=$(CARBONAPI_VERSION) \
 		-t openmetric/carbonapi:$(CARBONAPI_VERSION) \
 		-t openmetric/carbonapi:latest \
-		dockerfiles/graphite-stack/
+		.
 
 build-grafana:
 	docker build \
@@ -56,7 +56,7 @@ build-grafana:
 		--build-arg GRAFANA_VERSION=$(GRAFANA_VERSION) \
 		-t openmetric/grafana:$(GRAFANA_VERSION) \
 		-t openmetric/grafana:latest \
-		dockerfiles/graphite-stack/
+		.
 
 build-tools:
 	docker build \
@@ -66,4 +66,4 @@ build-tools:
 		--build-arg CARBONATE_VERSION=$(CARBONATE_VERSION) \
 		-t openmetric/tools:$(BUILD_DATE) \
 		-t openmetric/tools:latest \
-		dockerfiles/graphite-stack/
+		.
