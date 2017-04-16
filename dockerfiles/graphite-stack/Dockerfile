@@ -17,9 +17,10 @@ ARG CARBONATE_VERSION
 # if specified, apk will be instructed to use a local mirror to speed up image building
 ARG LOCAL_APK_MIRROR
 
-COPY build.sh /build.sh
+ADD build.sh /build.sh
 RUN /build.sh && rm -f /build.sh
-COPY entry.sh /entry.sh
+
+ADD entry.sh /entry.sh
 
 VOLUME ["/openmetric/conf", "/openmetric/log", "/openmetric/data"]
 

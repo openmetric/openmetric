@@ -42,8 +42,8 @@ case "$image_type" in
         exec su-exec openmetric carbonzipper -c $CONF/zipper.conf
         ;;
     carbonapi)
-        assert_conf_exist api.yaml
-        exec su-exec openmetric carbonapi -config $CONF/api.yaml
+        assert_conf_exist api.conf
+        exec su-exec openmetric carbonapi -config $CONF/api.conf
         ;;
     tools)
         if command -v "$1" 2>/dev/null; then

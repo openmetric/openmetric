@@ -1,0 +1,35 @@
+version: "3"
+
+networks:
+  openmetric_quickstart:
+    driver: bridge
+
+services:
+  carbon:
+    image: openmetric/go-carbon
+    volumes:
+      - ./conf:/openmetric/conf
+    networks:
+      - openmetric_quickstart
+  relay:
+    image: openmetric/carbon-c-relay
+    volumes:
+      - ./conf:/openmetric/conf
+    networks:
+      - openmetric_quickstart
+    ports:
+      - "2003:2003"
+  zipper:
+    image: openmetric/carbonzipper
+    volumes:
+      - ./conf:/openmetric/conf
+    networks:
+      - openmetric_quickstart
+  api:
+    image: openmetric/carbonapi
+    volumes:
+      - ./conf:/openmetric/conf
+    networks:
+      - openmetric_quickstart
+    ports:
+      - "5000:5000"

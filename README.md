@@ -4,40 +4,54 @@ Openmetric is a collection and combination of metric related tools (mainly the *
 we provide (and only provide) docker images to make the stack deployment easy.
 In the long term, we will enhance the stack so it can scale more easily.
 
+Currently, we choose the following components for the graphite stack:
+
+* [carbon-c-relay](https://github.com/grobian/carbon-c-relay)
+* [go-carbon](https://github.com/lomik/go-carbon)
+* [carbonzipper](https://github.com/go-graphite/carbonzipper)
+* [carbonapi](https://github.com/go-graphite/carbonapi)
+
 # Docker images
 
-Currently only a graphite-stack image is provided.
+A docker image is provided for each component, named as `openmetric/$component` .
+Image version is based on upstream tag or sha (if build against a branch other than a tag).
 
-**openmetric/graphite-stack** uses third-party implementation written in golang and C to replace the official one.
-Currently they are
-[carbon-c-relay](https://github.com/grobian/carbon-c-relay),
-[go-carbon](https://github.com/lomik/go-carbon),
-[carbonzipper](https://github.com/dgryski/carbonzipper),
-[carbonapi](https://github.com/dgryski/carbonapi),
+The following images are available:
+
+* `openmetric/carbon-c-relay`
+* `openmetric/go-carbon`
+* `openmetric/carbonzipper`
+* `openmetric/carbonapi`
+* `openmetric/tools` This image contains several management tools, currently only
+  [carbonate](https://github.com/graphite-project/carbonate) is included.
+
+All images does not provide default configuration file, as these components depends on each other,
+it's hard to provide sensible default configuration.
 
 ## Quick start
 
-Start an openmetric instance:
+We provide a quickstart configuration and docker compose file, you can start the stack easily with:
 
 ```
-docker run -d --name openmetric -p 2003:2003 -p 5000:5000 openmetric/graphite-stack standalone
+cd quickstart
+docker-compose up
 ```
 
-carbon-c-relay by default listens on port 2003, receives metrics in plain text protocol.
-carbonapi listens on port 5000, provides metric rendering api.
+It exposes 2003/tcp for receiving metrics in plain text protocol, and 5000/tcp for api requests.
 
-It's time to push metrics to openmetric. Let's generate a series of random int values at 10s interval:
+It's time to push metrics to the stack. Let's generate a series of random int values at 10s interval:
 
 ```
 while true; do
   echo "test.random.int ${RANDOM} $(date +%s)"
-done | nc openmetric-host 2003
+  sleep 10
+done | nc localhost 2003
 ```
 
 You can now read the data though api interface:
 
 ```
-curl 'http://openmetric-host:5000/render/?target=test.random.int&format=json'
+curl 'http://localhost:5000/render/?target=test.random.int&format=json'
 ```
 
 ## Directory layout in images
@@ -49,26 +63,17 @@ All runtime files (log, conf, data etc.) are all stored in ``/openmetric``, the 
 ```
 /openmetric/
   |- conf/
-      |- relay.conf, carbon.conf, schemas.conf, zipper.conf
+      |- relay.conf, carbon.conf, schemas.conf, zipper.conf, api.conf
   |- log/
-      |- relay.log, carbon.log, zipper.log, api.log, supervisord.log
+      |- relay.log, carbon.log, zipper.log, api.log, ...
   |- data/
       |- whisper
 ```
 
-Although we provided a default set of configuration files, you are always encouraged to provide your own.
+## Development
 
-Runnable binaries, scripts, libraries are installed in the system location (i.e. ``/usr/bin``),
-so there will be less problems with ``PATH`` env.
+All images are built using a single Dockerfile, controlled by build args, see Makefile for details.
 
-
-# Develop
-
-## Build docker images
-
-Since these images share common directories to `COPY` from, all `docker build` command should be run in the project root directory.
-For example:
-
-```
-docker build -t openmetric/compiler -f dockerfiles/compiler .
-```
+All images are built from alpine, so the images' size are significantly small.
+In an environment without internet access and private docker registry, it's easy to save the image
+and copy to production server.
