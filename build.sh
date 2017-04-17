@@ -55,8 +55,10 @@ setup_runtime_env() {
         apk add --no-cache python bash
     fi
 
-    # use su-exec to switch user
-    apk add --no-cache su-exec libc6-compat
+    # su-exec for switching user
+    # libc6-compat for running golang
+    # curl/netcat for health check
+    apk add --no-cache su-exec libc6-compat curl ca-certificates netcat-openbsd
 
     # setup libc6 compact
     mkdir -p /lib64
@@ -91,7 +93,7 @@ setup_golang() {
 
 # install packages required for compiling packages
 setup_build_env() {
-    local BUILD_DEPS="git mercurial curl ca-certificates make"
+    local BUILD_DEPS="git mercurial make"
     local REQUIRE_GOLANG=false
     local REQUIRE_NPM=false
 

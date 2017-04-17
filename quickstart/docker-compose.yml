@@ -7,12 +7,21 @@ networks:
 services:
   carbon:
     image: openmetric/go-carbon
+    hostname: carbon
+    restart: always
     volumes:
       - ./conf:/openmetric/conf
     networks:
       - openmetric_quickstart
+    healthcheck:
+      test: "curl -fsSL -o /dev/null 'http://localhost:2005/metrics/find/?query=*&format=json'"
+      interval: 10s
+      timeout: 1s
+      retries: 3
   relay:
     image: openmetric/carbon-c-relay
+    hostname: relay
+    restart: always
     volumes:
       - ./conf:/openmetric/conf
     networks:
@@ -22,16 +31,30 @@ services:
     depends_on:
       # relay relies on 'carbon' to be resolved
       - carbon
+    healthcheck:
+      test: nc -zv localhost 2003
+      interval: 10s
+      timeout: 1s
+      retries: 3
   zipper:
     image: openmetric/carbonzipper
+    hostname: zipper
+    restart: always
     volumes:
       - ./conf:/openmetric/conf
     networks:
       - openmetric_quickstart
     depends_on:
       - relay
+    healthcheck:
+      test: "curl -fsSL -o /dev/null http://localhost:2006/metrics/find/?query=*"
+      interval: 10s
+      timeout: 1s
+      retries: 3
   api:
     image: openmetric/carbonapi
+    hostname: api
+    restart: always
     volumes:
       - ./conf:/openmetric/conf
     networks:
@@ -40,8 +63,15 @@ services:
       - "5000:5000"
     depends_on:
       - relay
+    healthcheck:
+      test: "curl -fsSL -o /dev/null http://localhost:5000/metrics/find/?query=*"
+      interval: 10s
+      timeout: 1s
+      retries: 3
   grafana:
     image: openmetric/grafana
+    hostname: grafana
+    restart: always
     volumes:
       - ./conf:/openmetric/conf
     networks:
@@ -50,3 +80,8 @@ services:
       - "3000:3000"
     depends_on:
       - relay
+    healthcheck:
+      test: "curl -fsSL -o /dev/null http://localhost:3000/login"
+      interval: 10s
+      timeout: 1s
+      retries: 3
