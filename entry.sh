@@ -39,11 +39,24 @@ case "$image_type" in
         ;;
     carbonzipper)
         assert_conf_exist zipper.conf
-        exec su-exec openmetric carbonzipper -c $CONF/zipper.conf
+        # for current stable release
+        exec su-exec openmetric carbonzipper -c $CONF/zipper.conf -logdir /openmetric/log/
+        # for next release
+        #exec su-exec openmetric carbonzipper -c $CONF/zipper.conf
         ;;
     carbonapi)
         assert_conf_exist api.conf
-        exec su-exec openmetric carbonapi -config $CONF/api.conf
+        # for current stable release
+        source $CONF/api.conf
+        exec su-exec openmetric carbonapi \
+            -p ${LISTEN_PORT:-5000} \
+            -z ${ZIPPER_URL:-127.0.0.1:8080} \
+            -graphite ${GRAPHITE_URL:-127.0.0.1:2003} \
+            -prefix ${INTERNAL_METRIC_PREFIX:-carbon.api} \
+            -i ${INTERVAL:-10s} \
+            -logdir ${LOGDIR:-/openmetric/log/}
+        # for next release
+        #exec su-exec openmetric carbonapi -config $CONF/api.conf
         ;;
     grafana)
         assert_conf_exist grafana.conf

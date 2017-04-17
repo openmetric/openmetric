@@ -1,0 +1,43 @@
+# Need to be URL, http or https
+zipper: "http://zipper:2006"
+# Listen address, should always include hostname or ip address and a port.
+listen: ":5000"
+# Max concurrent requests to CarbonZipper
+concurency: 20
+cache:
+   # Type of caching. Valid: "mem", "memcache", "none"
+   type: "mem"
+   # Cache limit in megabytes
+   size_mb: 0
+   # Only used by memcache type of cache. List of memcache servers.
+   memcachedServers: []
+# Amount of CPUs to use. 0 - unlimited
+cpus: 0
+# Timezone, default - local
+tz: ""
+# If 'true', carbonapi will send requests as is, with globs and braces
+# Otherwise for each request it will generate /metrics/find and then /render
+# individual metrics.
+# true - faster, but will cause carbonzipper to consume much more RAM.
+sendGlobsAsIs: true
+graphite:
+    # Host:port where to send internal metrics
+    # Empty = disabled
+    host: "relay:2003"
+    interval: "10s"
+    prefix: "openmetric.api"
+# Maximium idle connections to carbonzipper
+idleConnections: 10
+pidFile: ""
+# See https://github.com/go-graphite/carbonzipper/blob/master/example.conf#L70-L108 for format explanation
+logger:
+    - logger: ""
+      file: "stderr"
+      level: "debug"
+      encoding: "console"
+      encodingTime: "iso8601"
+      encodingDuration: "seconds"
+    - logger: ""
+      file: "/openmetric/log/carbonapi.log"
+      level: "info"
+      encoding: "json"

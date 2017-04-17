@@ -15,5 +15,20 @@
     ],
 
     "SearchBackend": "",
-    "SearchPrefix": ""
+    "SearchPrefix": "",
+
+    "Logger": [{
+        "Logger": "",
+        "File": "stderr",
+        "Level": "debug",
+        "Encoding": "console",
+        "EncodingTime": "iso8601",
+        "EncodingDuration": "seconds"
+    },
+    {
+        "Logger": "",
+        "File": "/openmetric/log/zipper.log",
+        "Level": "info",
+        "Encoding": "json"
+    }]
 }

@@ -202,6 +202,21 @@ install_go_carbon() {
 }
 
 install_carbonzipper() {
+    local repo_url=https://github.com/go-graphite/carbonzipper.git
+    local src_dir=$GOPATH/src/github.com/go-graphite/carbonzipper
+    local repo_url2=https://github.com/dgryski/carbonzipper.git
+    local src_dir2=$GOPATH/src/github.com/dgryski/carbonzipper
+
+    echo "Compiling carbonzipper ..."
+    clone_git_repo $repo_url $src_dir $CARBONZIPPER_VERSION
+    clone_git_repo $repo_url2 $src_dir2 $CARBONZIPPER_VERSION
+    go get -v github.com/go-graphite/carbonzipper
+
+    echo "Installing carbonzipper ..."
+    install -v -D -m 755 $GOPATH/bin/carbonzipper /usr/bin/carbonzipper
+}
+
+install_carbonzipper_next_release() {
     #git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/go-graphite/carbonapi
     #git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/go-graphite/carbonzipper
     local repo_url=https://github.com/go-graphite/carbonzipper.git
@@ -216,6 +231,25 @@ install_carbonzipper() {
 }
 
 install_carbonapi() {
+    # for the current stable release
+    local repo_url=https://github.com/go-graphite/carbonapi.git
+    local src_dir=$GOPATH/src/github.com/go-graphite/carbonapi
+    local repo_url2=https://github.com/dgryski/carbonapi.git
+    local src_dir2=$GOPATH/src/github.com/dgryski/carbonapi
+
+    echo "Compiling carbonapi ..."
+    clone_git_repo $repo_url $src_dir $CARBONAPI_VERSION
+    clone_git_repo $repo_url2 $src_dir2 $CARBONAPI_VERSION
+    go get -v -tags cairo github.com/go-graphite/carbonapi
+
+    echo "Installing carbonapi ..."
+    install -v -D -m 755 $GOPATH/bin/carbonapi /usr/bin/carbonapi
+
+    # carbonapi requires cairo to support png/svg rendering
+    apk add --no-cache cairo
+}
+
+install_carbonapi_next_release() {
     #git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/go-graphite/carbonapi
     #git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/go-graphite/carbonzipper
     local repo_url=https://github.com/go-graphite/carbonapi.git
