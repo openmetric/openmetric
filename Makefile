@@ -4,11 +4,9 @@ LOCAL_NPM_MIRROR = https://registry.npm.taobao.org
 LOCAL_NPM_DISTURL_MIRROR = https://npm.taobao.org/dist
 
 CARBON_C_RELAY_VERSION = v3.0
-GO_CARBON_VERSION = $(shell git ls-remote https://github.com/lomik/go-carbon HEAD | awk '{print substr($$1, 0, 7)}')
+GO_CARBON_VERSION = 017dfeb
 CARBONZIPPER_VERSION = 0.63
-#CARBONZIPPER_VERSION = $(shell git ls-remote https://github.com/go-graphite/carbonzipper HEAD | awk '{print substr($$1, 0, 7)}')
 CARBONAPI_VERSION = 8684aa1
-#CARBONAPI_VERSION = $(shell git ls-remote https://github.com/go-graphite/carbonapi HEAD | awk '{print substr($$1, 0, 7)}')
 GRAFANA_VERSION = v4.1.2
 WHISPER_VERSION = 1.0.0
 CARBONATE_VERSION = 1.0.0

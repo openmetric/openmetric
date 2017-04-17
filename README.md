@@ -77,8 +77,15 @@ All runtime files (log, conf, data etc.) are all stored in ``/openmetric``, the 
 
 ## Development
 
-All images are built using a single Dockerfile, controlled by build args, see Makefile for details.
+All images are built using a single Dockerfile, controlled by build args,
+see [Makefile](https://github.com/openmetric/openmetric/blob/master/Makefile) for details.
 
 All images are built from alpine, so the images' size are significantly small.
 In an environment without internet access and private docker registry, it's easy to save the image
 and copy to production server.
+
+## Changes and versioning
+
+Component images are versioned by upstream valid git ref, usually will be tags.
+
+See [CHANGES.md](https://github.com/openmetric/openmetric/blob/master/CHANGES.md) for build scripts and other changes.
