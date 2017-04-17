@@ -64,7 +64,7 @@ case "$image_type" in
             --homepath=/usr/share/grafana \
             --config=$CONF/grafana.conf \
             cfg:default.paths.data="/openmetric/data/grafana" \
-            cfg:default.paths.logs="/openmetric/grafana/log" \
+            cfg:default.paths.logs="/openmetric/log" \
             cfg:default.paths.plugins="/openmetric/data/grafana-plugins"
         ;;
     tools)
