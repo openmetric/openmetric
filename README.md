@@ -32,14 +32,13 @@ it's hard to provide sensible default configuration.
 
 ## Quick start
 
-We provide a quickstart configuration and docker compose file, you can start the stack easily with:
+A quickstart docker compose file is provided, you can start the stack easily with:
 
 ```
-cd quickstart
-docker-compose up
+docker-compose -f quickstart/docker-compose.yml up
 ```
 
-It exposes 2003/tcp for receiving metrics in plain text protocol, and 5000/tcp for api requests.
+`2003/tcp` is exposed to receive metrics in plain text protocol, and `5000/tcp` for api requests.
 
 It's time to push metrics to the stack. Let's generate a series of random int values at 10s interval:
 
@@ -67,11 +66,13 @@ All runtime files (log, conf, data etc.) are all stored in ``/openmetric``, the 
 ```
 /openmetric/
   |- conf/
-      |- relay.conf, carbon.conf, schemas.conf, zipper.conf, api.conf
+  |   |- relay.conf, carbon.conf, schemas.conf, zipper.conf, api.conf, grafana.conf
   |- log/
-      |- relay.log, carbon.log, zipper.log, api.log, ...
+  |   |- relay.log, carbon.log, zipper.log, api.log, ...
   |- data/
-      |- whisper
+  |   |- whisper
+  |   |- grafana
+  |   |- grafana-plugins
 ```
 
 ## Development
