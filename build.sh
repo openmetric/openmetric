@@ -183,6 +183,10 @@ install_carbon_c_relay() {
     local repo_url=https://github.com/grobian/carbon-c-relay.git
     local src_dir=/build/carbon-c-relay
 
+    if [ "$CARBON_C_RELAY_VERSION" = "edge" ]; then
+        CARBON_C_RELAY_VERSION=master
+    fi
+
     echo "Compiling carbon-c-relay ..."
     clone_git_repo $repo_url $src_dir $CARBON_C_RELAY_VERSION fast
     (cd $src_dir && make relay)
@@ -195,6 +199,10 @@ install_go_carbon() {
     local repo_url=https://github.com/lomik/go-carbon.git
     local src_dir=/build/go-carbon
 
+    if [ "$GO_CARBON_VERSION" = "edge" ]; then
+        GO_CARBON_VERSION=master
+    fi
+
     echo "Compiling go-carbon ..."
     clone_git_repo $repo_url $src_dir $GO_CARBON_VERSION
     (cd $src_dir && make submodules && make)
@@ -204,65 +212,61 @@ install_go_carbon() {
 }
 
 install_carbonzipper() {
+    #git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/go-graphite/carbonapi
+    #git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/go-graphite/carbonzipper
     local repo_url=https://github.com/go-graphite/carbonzipper.git
     local src_dir=$GOPATH/src/github.com/go-graphite/carbonzipper
     local repo_url2=https://github.com/dgryski/carbonzipper.git
     local src_dir2=$GOPATH/src/github.com/dgryski/carbonzipper
 
+    if [ "$CARBONZIPPER_VERSION" = "edge" ]; then
+        CARBONZIPPER_VERSION=master
+    fi
+
     echo "Compiling carbonzipper ..."
     clone_git_repo $repo_url $src_dir $CARBONZIPPER_VERSION
     clone_git_repo $repo_url2 $src_dir2 $CARBONZIPPER_VERSION
-    go get -v github.com/go-graphite/carbonzipper
+
+    local binary_file=""
+    if [ -f "$src_dir/Makefile" ]; then
+        (cd $src_dir && make)
+        binary_file=$src_dir/carbonzipper
+    else
+        go get -v github.com/go-graphite/carbonzipper
+        binary_file=$GOPATH/bin/carbonzipper
+    fi
 
     echo "Installing carbonzipper ..."
-    install -v -D -m 755 $GOPATH/bin/carbonzipper /usr/bin/carbonzipper
-}
-
-install_carbonzipper_next_release() {
-    #git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/go-graphite/carbonapi
-    #git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/go-graphite/carbonzipper
-    local repo_url=https://github.com/go-graphite/carbonzipper.git
-    local src_dir=$GOPATH/src/github.com/go-graphite/carbonzipper
-
-    echo "Compiling carbonzipper ..."
-    clone_git_repo $repo_url $src_dir $CARBONZIPPER_VERSION
-    (cd $src_dir && make)
-
-    echo "Installing carbonzipper ..."
-    install -v -D -m 755 $src_dir/carbonzipper /usr/bin/carbonzipper
+    install -v -D -m 755 $binary_file /usr/bin/carbonzipper
 }
 
 install_carbonapi() {
-    # for the current stable release
+    #git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/go-graphite/carbonapi
+    #git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/go-graphite/carbonzipper
     local repo_url=https://github.com/go-graphite/carbonapi.git
     local src_dir=$GOPATH/src/github.com/go-graphite/carbonapi
     local repo_url2=https://github.com/dgryski/carbonapi.git
     local src_dir2=$GOPATH/src/github.com/dgryski/carbonapi
 
+    if [ "$CARBONAPI_VERSION" = "edge" ]; then
+        CARBONAPI_VERSION=master
+    fi
+
     echo "Compiling carbonapi ..."
     clone_git_repo $repo_url $src_dir $CARBONAPI_VERSION
     clone_git_repo $repo_url2 $src_dir2 $CARBONAPI_VERSION
-    go get -v -tags cairo github.com/go-graphite/carbonapi
+
+    local binary_file=""
+    if [ -f "$src_dir/Makefile" ]; then
+        (cd $src_dir && make)
+        binary_file=$src_dir/carbonapi
+    else
+        go get -v -tags cairo github.com/go-graphite/carbonapi
+        binary_file=$GOPATH/bin/carbonapi
+    fi
 
     echo "Installing carbonapi ..."
-    install -v -D -m 755 $GOPATH/bin/carbonapi /usr/bin/carbonapi
-
-    # carbonapi requires cairo to support png/svg rendering
-    apk add --no-cache cairo
-}
-
-install_carbonapi_next_release() {
-    #git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/go-graphite/carbonapi
-    #git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/go-graphite/carbonzipper
-    local repo_url=https://github.com/go-graphite/carbonapi.git
-    local src_dir=$GOPATH/src/github.com/go-graphite/carbonapi
-
-    echo "Compiling carbonapi ..."
-    clone_git_repo $repo_url $src_dir $CARBONAPI_VERSION
-    (cd $src_dir && make)
-
-    echo "Installing carbonapi ..."
-    install -v -D -m 755 $src_dir/carbonapi /usr/bin/carbonapi
+    install -v -D -m 755 $binary_file /usr/bin/carbonapi
 
     # carbonapi requires cairo to support png/svg rendering
     apk add --no-cache cairo
@@ -271,6 +275,10 @@ install_carbonapi_next_release() {
 install_grafana() {
     local repo_url=https://github.com/grafana/grafana.git
     local src_dir=$GOPATH/src/github.com/grafana/grafana
+
+    if [ "$GRAFANA_VERSION" = "edge" ]; then
+        GRAFANA_VERSION=master
+    fi
 
     echo "Compiling grafana ..."
     clone_git_repo $repo_url $src_dir $GRAFANA_VERSION fast
@@ -297,13 +305,26 @@ install_grafana() {
 }
 
 install_tools() {
-    pip install whisper==$WHISPER_VERSION
+    local _whisper_pkg=""
+    if [ "$WHISPER_VERSION" = "edge" ]; then
+        _whisper_pkg="git+https://github.com/graphite-project/whisper.git@master#egg=whisper"
+    else
+        _whisper_pkg="whisper==$WHISPER_VERSION"
+    fi
+    pip install "${_whisper_pkg}"
+
+    local _carbonate_pkg=""
+    if [ "$CARBONATE_VERSION" = "edge"]; then
+        _carbonate_pkg="git+https://github.com/graphite-project/carbonate.git@master#egg=carbonate"
+    else
+        _carbonate_pkg="carbonate==$CARBONATE_VERSION"
+    fi
     pip install \
         --install-option="--prefix=/usr/share/graphite" \
         --install-option="--install-lib=/usr/lib/python2.7/site-packages" \
         --install-option="--install-data=/var/lib/graphite" \
         --install-option="--install-scripts=/usr/bin" \
-        carbonate==$CARBONATE_VERSION
+        "${_carbonate_pkg}"
 }
 
 require_build_arg() {

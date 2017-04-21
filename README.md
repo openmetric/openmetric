@@ -84,6 +84,10 @@ All images are built from alpine, so the images' size are significantly small.
 In an environment without internet access and private docker registry, it's easy to save the image
 and copy to production server.
 
+## `:edge` images
+
+All images with `:edge` tag are built with components' latest code. These images are meant to be used for testing purpose.
+
 ## Changes and versioning
 
 Component images are versioned by upstream valid git ref, usually will be tags.

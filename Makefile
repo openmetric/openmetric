@@ -1,69 +1,46 @@
 BUILD_DATE = $(shell date "+%Y%m%d")
-LOCAL_APK_MIRROR = https://mirrors.ustc.edu.cn/alpine/
-LOCAL_NPM_MIRROR = https://registry.npm.taobao.org
-LOCAL_NPM_DISTURL_MIRROR = https://npm.taobao.org/dist
 
-CARBON_C_RELAY_VERSION = v3.0
-GO_CARBON_VERSION = 017dfeb
-CARBONZIPPER_VERSION = 0.63
-CARBONAPI_VERSION = 8684aa1
-GRAFANA_VERSION = v4.1.2
-WHISPER_VERSION = 1.0.0
-CARBONATE_VERSION = 1.0.0
+LOCAL_APK_MIRROR         ?= https://mirrors.ustc.edu.cn/alpine/
+LOCAL_NPM_MIRROR         ?= https://registry.npm.taobao.org
+LOCAL_NPM_DISTURL_MIRROR ?= https://npm.taobao.org/dist
 
-build-carbon-c-relay:
-	docker build \
-		--build-arg IMAGE_TYPE=carbon-c-relay \
-		--build-arg LOCAL_APK_MIRROR=$(LOCAL_APK_MIRROR) \
-		--build-arg CARBON_C_RELAY_VERSION=$(CARBON_C_RELAY_VERSION) \
-		-t openmetric/carbon-c-relay:$(CARBON_C_RELAY_VERSION) \
-		-t openmetric/carbon-c-relay:latest \
-		.
+CARBON_C_RELAY_VERSION   ?= $(if $(EDGE),edge,v3.0)
+GO_CARBON_VERSION        ?= $(if $(EDGE),edge,017dfeb)
+CARBONZIPPER_VERSION     ?= $(if $(EDGE),edge,0.63)
+CARBONAPI_VERSION        ?= $(if $(EDGE),edge,8684aa1)
+GRAFANA_VERSION          ?= $(if $(EDGE),edge,v4.1.2)
+WHISPER_VERSION          ?= $(if $(EDGE),edge,1.0.0)
+CARBONATE_VERSION        ?= $(if $(EDGE),edge,1.0.0)
+TOOLS_VERSION            ?= $(if $(EDGE),edge,$(BUILD_DATE))
 
-build-go-carbon:
-	docker build \
-		--build-arg IMAGE_TYPE=go-carbon \
-		--build-arg LOCAL_APK_MIRROR=$(LOCAL_APK_MIRROR) \
-		--build-arg GO_CARBON_VERSION=$(GO_CARBON_VERSION) \
-		-t openmetric/go-carbon:$(GO_CARBON_VERSION) \
-		-t openmetric/go-carbon:latest \
-		.
+MIRRORS    = APK NPM NPM_DISTURL
+COMPONENTS = CARBON_C_RELAY GO_CARBON CARBONZIPPER CARBONAPI GRAFANA WHISPER CARBONATE
+IMAGES     = carbon-c-relay go-carbon carbonzipper carbonapi grafana tools
 
-build-carbonzipper:
-	docker build \
-		--build-arg IMAGE_TYPE=carbonzipper \
-		--build-arg LOCAL_APK_MIRROR=$(LOCAL_APK_MIRROR) \
-		--build-arg CARBONZIPPER_VERSION=$(CARBONZIPPER_VERSION) \
-		-t openmetric/carbonzipper:$(CARBONZIPPER_VERSION) \
-		-t openmetric/carbonzipper:latest \
-		.
+# if an image name is same as component name, use component's version for image tag, otherwise use build date
+IMAGE_VERSION = $(or $($(shell echo $(IMAGE_TYPE) | tr a-z- A-Z_)_VERSION),$(BUILD_DATE))
+TAGS          = openmetric/$(IMAGE_TYPE):$(IMAGE_VERSION) $(if $(LATEST),openmetric/$(IMAGE_TYPE):latest)
 
-build-carbonapi:
-	docker build \
-		--build-arg IMAGE_TYPE=carbonapi \
-		--build-arg LOCAL_APK_MIRROR=$(LOCAL_APK_MIRROR) \
-		--build-arg CARBONAPI_VERSION=$(CARBONAPI_VERSION) \
-		-t openmetric/carbonapi:$(CARBONAPI_VERSION) \
-		-t openmetric/carbonapi:latest \
-		.
+MIRROR_ARGS   = $(foreach m, $(MIRRORS), --build-arg LOCAL_$(m)_MIRROR=$(LOCAL_$(m)_MIRROR))
+VERSION_ARGS  = $(foreach c, $(COMPONENTS), --build-arg $(c)_VERSION=$($(c)_VERSION))
+TAG_ARGS      = $(foreach t, $(TAGS), -t $(t))
 
-build-grafana:
-	docker build \
-		--build-arg IMAGE_TYPE=grafana \
-		--build-arg LOCAL_APK_MIRROR=$(LOCAL_APK_MIRROR) \
-		--build-arg LOCAL_NPM_MIRROR=$(LOCAL_NPM_MIRROR) \
-		--build-arg LOCAL_NPM_DISTURL_MIRROR=$(LOCAL_NPM_DISTURL_MIRROR) \
-		--build-arg GRAFANA_VERSION=$(GRAFANA_VERSION) \
-		-t openmetric/grafana:$(GRAFANA_VERSION) \
-		-t openmetric/grafana:latest \
-		.
+.PHONY: help all $(IMAGES)
+help:
+	@echo "Usage:"
+	@echo ""
+	@echo "    make <image>|all [LATEST=1] [EDGE=1] [<COMPONENT>_VERSION=<VERSION>] [PUSH=1]"
+	@echo "          <image>: specify image to build, available images: $(IMAGES)"
+	@echo "              all: build all images"
+	@echo "           LATEST: if defined, will also tag built image with ':latest'"
+	@echo "             EDGE: if defined, will build with components' latest code (master branch)"
+	@echo "          <COMPONENT>_VERSION: if specified, will build with this version, should be valid git ref"
+	@echo "                               available components: $(COMPONENTS)"
+	@echo "             PUSH: if defined, will run 'docker push' afterwards"
 
-build-tools:
-	docker build \
-		--build-arg IMAGE_TYPE=tools \
-		--build-arg LOCAL_APK_MIRROR=$(LOCAL_APK_MIRROR) \
-		--build-arg WHISPER_VERSION=$(WHISPER_VERSION) \
-		--build-arg CARBONATE_VERSION=$(CARBONATE_VERSION) \
-		-t openmetric/tools:$(BUILD_DATE) \
-		-t openmetric/tools:latest \
-		.
+all: $(IMAGES)
+
+$(IMAGES): IMAGE_TYPE = $@
+$(IMAGES):
+	docker build --build-arg IMAGE_TYPE=$(IMAGE_TYPE) $(MIRROR_ARGS) $(VERSION_ARGS) $(TAG_ARGS) .
+	@if [ -n "$(PUSH)" ]; then for tag in $(TAGS); do docker push $$tag; done; fi
