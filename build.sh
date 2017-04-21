@@ -314,7 +314,7 @@ install_tools() {
     pip install "${_whisper_pkg}"
 
     local _carbonate_pkg=""
-    if [ "$CARBONATE_VERSION" = "edge"]; then
+    if [ "$CARBONATE_VERSION" = "edge" ]; then
         _carbonate_pkg="git+https://github.com/graphite-project/carbonate.git@master#egg=carbonate"
     else
         _carbonate_pkg="carbonate==$CARBONATE_VERSION"
