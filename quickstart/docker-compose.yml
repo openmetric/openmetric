@@ -47,7 +47,7 @@ services:
     depends_on:
       - relay
     healthcheck:
-      test: "curl -fsSL -o /dev/null http://localhost:2006/metrics/find/?query=*"
+      test: "curl -fsSL -o /dev/null http://localhost:2006/lb_check"
       interval: 10s
       timeout: 1s
       retries: 3
@@ -64,7 +64,7 @@ services:
     depends_on:
       - relay
     healthcheck:
-      test: "curl -fsSL -o /dev/null http://localhost:5000/metrics/find/?query=*"
+      test: "curl -fsSL -o /dev/null http://localhost:5000/lb_check"
       interval: 10s
       timeout: 1s
       retries: 3
