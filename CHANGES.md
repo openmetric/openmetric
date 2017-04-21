@@ -36,11 +36,12 @@ Components Versions:
 | components | version | note |
 | :---       | :---    | ---  |
 | carbon-c-relay | [v3.0](https://github.com/grobian/carbon-c-relay/tree/v3.0) |  |
-| go-carbon |  [017dfeb](https://github.com/lomik/go-carbon/tree/017dfeb) | The latest tagged version of carbonzipper requires protobuf3 support, however latest tagged version of [lomik/go-carbon@v0.9.1](https://github.com/lomik/go-carbon/tree/v0.9.1) does not support protobuf3. |
-| carbonzipper | [0.63](https://github.com/go-graphite/carbonzipper/tree/0.63) | |
-| carbonapi | [8684aa1](https://github.com/go-graphite/tree/8684aa1) | The latest tagged version [go-graphite/carbonapi@0.7.0](https://github.com/go-graphite/carbonapi/tree/0.7.0) does not support settings internal metric prefix. |
-| grafana | [v4.1.2](https://github.com/grafana/grafana/tree/v4.1.2) | Since phantomjs does not provide pre-built binary for alpine, phantomjs is removed, thus 'Direct link rendered image' won't work. |
-| tools | [whisper@1.0.0](https://github.com/graphite-project/whisper/tree/1.0.0)<br>[carbonate@1.0.0](https://github.com/graphite-project/carbonate/tree/1.0.0) | |
+| go-carbon      | [017dfeb](https://github.com/lomik/go-carbon/tree/017dfeb) | The latest tagged version of carbonzipper requires protobuf3 support, however latest tagged version of [v0.9.1](https://github.com/lomik/go-carbon/tree/v0.9.1) does not support protobuf3. |
+| carbonzipper   | [0.63](https://github.com/go-graphite/carbonzipper/tree/0.63) | |
+| carbonapi      | [8684aa1](https://github.com/go-graphite/tree/8684aa1) | The latest tagged version [0.7.0](https://github.com/go-graphite/carbonapi/tree/0.7.0) does not support settings internal metric prefix. |
+| grafana        | [v4.1.2](https://github.com/grafana/grafana/tree/v4.1.2) | Since phantomjs does not provide pre-built binary for alpine, phantomjs is removed, thus 'Direct link rendered image' won't work. |
+| whisper        | [1.0.0](https://github.com/graphite-project/whisper/tree/1.0.0) | |
+| carbonate      | [1.0.0](https://github.com/graphite-project/carbonate/tree/1.0.0) | |
 
 Changes and Notes:
 
