@@ -6,7 +6,7 @@ networks:
 
 services:
   carbon:
-    image: openmetric/go-carbon:latest
+    image: openmetric/go-carbon:edge
     hostname: carbon
     restart: always
     volumes:
@@ -20,7 +20,7 @@ services:
       timeout: 1s
       retries: 3
   relay:
-    image: openmetric/carbon-c-relay:latest
+    image: openmetric/carbon-c-relay:edge
     hostname: relay
     restart: always
     volumes:
@@ -38,11 +38,11 @@ services:
       timeout: 1s
       retries: 3
   zipper:
-    image: openmetric/carbonzipper:latest
+    image: openmetric/carbonzipper:edge
     hostname: zipper
     restart: always
     volumes:
-      - ./conf/zipper.conf:/openmetric/conf/zipper.conf:ro
+      - ./conf/zipper.conf.edge:/openmetric/conf/zipper.conf:ro
     networks:
       - openmetric_quickstart
     depends_on:
@@ -53,11 +53,11 @@ services:
       timeout: 1s
       retries: 3
   api:
-    image: openmetric/carbonapi:latest
+    image: openmetric/carbonapi:edge
     hostname: api
     restart: always
     volumes:
-      - ./conf/api.conf:/openmetric/conf/api.conf:ro
+      - ./conf/api.conf.edge:/openmetric/conf/api.conf:ro
     networks:
       - openmetric_quickstart
     ports:
@@ -70,7 +70,7 @@ services:
       timeout: 1s
       retries: 3
   grafana:
-    image: openmetric/grafana:latest
+    image: openmetric/grafana:edge
     hostname: grafana
     restart: always
     volumes:
