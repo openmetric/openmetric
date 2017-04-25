@@ -188,7 +188,7 @@ install_carbon_c_relay() {
     fi
 
     echo "Compiling carbon-c-relay ..."
-    clone_git_repo $repo_url $src_dir $CARBON_C_RELAY_VERSION fast
+    clone_git_repo $repo_url $src_dir $CARBON_C_RELAY_VERSION
     (cd $src_dir && make relay)
 
     echo "Installing carbon-c-relay"
