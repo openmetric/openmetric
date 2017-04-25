@@ -99,7 +99,7 @@ setup_build_env() {
 
     case "$IMAGE_TYPE" in
         carbon-c-relay)
-            BUILD_DEPS="$BUILD_DEPS gcc musl-dev bison flex"
+            BUILD_DEPS="$BUILD_DEPS gcc musl-dev bison flex automake autoconf"
             ;;
         go-carbon)
             REQUIRE_GOLANG=true
@@ -189,7 +189,12 @@ install_carbon_c_relay() {
 
     echo "Compiling carbon-c-relay ..."
     clone_git_repo $repo_url $src_dir $CARBON_C_RELAY_VERSION
-    (cd $src_dir && make relay)
+
+    if [ -f "$src_dir/configure" ]; then
+        (cd $src_dir && ./configure && make)
+    else
+        (cd $src_dir && make relay)
+    fi
 
     echo "Installing carbon-c-relay"
     install -v -D -m 755 $src_dir/relay /usr/bin/carbon-c-relay
