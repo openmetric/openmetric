@@ -24,12 +24,13 @@ TAGS          = openmetric/$(IMAGE_TYPE):$(IMAGE_VERSION) $(if $(LATEST),openmet
 MIRROR_ARGS   = $(foreach m, $(MIRRORS), --build-arg LOCAL_$(m)_MIRROR=$(LOCAL_$(m)_MIRROR))
 VERSION_ARGS  = $(foreach c, $(COMPONENTS), --build-arg $(c)_VERSION=$($(c)_VERSION))
 TAG_ARGS      = $(foreach t, $(TAGS), -t $(t))
+CACHE_ARGS    = $(if $(NOCACHE), --no-cache, )
 
 .PHONY: help all $(IMAGES)
 help:
 	@echo "Usage:"
 	@echo ""
-	@echo "    make <image>|all [LATEST=1] [EDGE=1] [<COMPONENT>_VERSION=<VERSION>] [PUSH=1]"
+	@echo "    make <image>|all [LATEST=1] [EDGE=1] [<COMPONENT>_VERSION=<VERSION>] [PUSH=1] [NOCACHE=1]"
 	@echo "          <image>: specify image to build, available images: $(IMAGES)"
 	@echo "              all: build all images"
 	@echo "           LATEST: if defined, will also tag built image with ':latest'"
@@ -37,10 +38,11 @@ help:
 	@echo "          <COMPONENT>_VERSION: if specified, will build with this version, should be valid git ref"
 	@echo "                               available components: $(COMPONENTS)"
 	@echo "             PUSH: if defined, will run 'docker push' afterwards"
+	@echo "          NOCACHE: if defined, will run 'docker build' with '--no-cache' option"
 
 all: $(IMAGES)
 
 $(IMAGES): IMAGE_TYPE = $@
 $(IMAGES):
-	docker build --build-arg IMAGE_TYPE=$(IMAGE_TYPE) $(MIRROR_ARGS) $(VERSION_ARGS) $(TAG_ARGS) .
+	docker build $(CACHE_ARGS) --build-arg IMAGE_TYPE=$(IMAGE_TYPE) $(MIRROR_ARGS) $(VERSION_ARGS) $(TAG_ARGS) .
 	@if [ -n "$(PUSH)" ]; then for tag in $(TAGS); do docker push $$tag; done; fi
