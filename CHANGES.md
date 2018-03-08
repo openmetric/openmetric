@@ -23,11 +23,23 @@ Upstream Change Links
 Changes
 ----------
 
-**Master (not released)**
+**0.2 (2018.03.08)**
+
+Components Versions:
+
+| components | version | note |
+| :---       | :---    | ---  |
+| carbon-c-relay | [v3.2](https://github.com/grobian/carbon-c-relay/tree/v3.2) | |
+| go-carbon      | [v0.12.0-rc1](https://github.com/lomik/go-carbon/tree/v0.12.0-rc1) | |
+| carbonapi      | [v0.10.0.1](https://github.com/go-graphite/tree/v0.10.0.1) | |
+| grafana        | [v5.0.0](https://github.com/grafana/grafana/tree/v5.0.0) | Since phantomjs does not provide pre-built binary for alpine, phantomjs is removed, thus 'Direct link rendered image' won't work. |
+| whisper        | [1.1.2](https://github.com/graphite-project/whisper/tree/1.1.2) | |
+| carbonate      | [1.1.2](https://github.com/graphite-project/carbonate/tree/1.1.2) | |
 
 Changes and Notes:
 
   - Build (possibly daily) `:edge` images with components' latest code.
+  - Build remove carbonzipper, it has been builtin into carbonapi.
 
 **0.1 (2017.04.17)**
 

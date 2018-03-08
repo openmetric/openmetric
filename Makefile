@@ -4,18 +4,17 @@ LOCAL_APK_MIRROR         ?= https://mirrors.ustc.edu.cn/alpine/
 LOCAL_NPM_MIRROR         ?= https://registry.npm.taobao.org
 LOCAL_NPM_DISTURL_MIRROR ?= https://npm.taobao.org/dist
 
-CARBON_C_RELAY_VERSION   ?= $(if $(EDGE),edge,v3.0)
-GO_CARBON_VERSION        ?= $(if $(EDGE),edge,017dfeb)
-CARBONZIPPER_VERSION     ?= $(if $(EDGE),edge,0.63)
-CARBONAPI_VERSION        ?= $(if $(EDGE),edge,8684aa1)
-GRAFANA_VERSION          ?= $(if $(EDGE),edge,v4.1.2)
-WHISPER_VERSION          ?= $(if $(EDGE),edge,1.0.0)
-CARBONATE_VERSION        ?= $(if $(EDGE),edge,1.0.0)
+CARBON_C_RELAY_VERSION   ?= $(if $(EDGE),edge,v3.2)
+GO_CARBON_VERSION        ?= $(if $(EDGE),edge,v0.12.0-rc1)
+CARBONAPI_VERSION        ?= $(if $(EDGE),edge,0.10.0.1)
+GRAFANA_VERSION          ?= $(if $(EDGE),edge,v5.0.0)
+WHISPER_VERSION          ?= $(if $(EDGE),edge,1.1.2)
+CARBONATE_VERSION        ?= $(if $(EDGE),edge,1.1.2)
 TOOLS_VERSION            ?= $(if $(EDGE),edge,$(BUILD_DATE))
 
 MIRRORS    = APK NPM NPM_DISTURL
-COMPONENTS = CARBON_C_RELAY GO_CARBON CARBONZIPPER CARBONAPI GRAFANA WHISPER CARBONATE
-IMAGES     = carbon-c-relay go-carbon carbonzipper carbonapi grafana tools
+COMPONENTS = CARBON_C_RELAY GO_CARBON CARBONAPI GRAFANA WHISPER CARBONATE
+IMAGES     = carbon-c-relay go-carbon carbonapi grafana tools
 
 # if an image name is same as component name, use component's version for image tag, otherwise use build date
 IMAGE_VERSION = $(or $($(shell echo $(IMAGE_TYPE) | tr a-z- A-Z_)_VERSION),$(BUILD_DATE))

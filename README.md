@@ -8,7 +8,6 @@ Currently, we choose the following components for the graphite stack:
 
 * [carbon-c-relay](https://github.com/grobian/carbon-c-relay)
 * [go-carbon](https://github.com/lomik/go-carbon)
-* [carbonzipper](https://github.com/go-graphite/carbonzipper)
 * [carbonapi](https://github.com/go-graphite/carbonapi)
 * [grafana](https://github.com/grafana/grafana)
 
@@ -21,7 +20,6 @@ The following images are available:
 
 * `openmetric/carbon-c-relay`
 * `openmetric/go-carbon`
-* `openmetric/carbonzipper`
 * `openmetric/carbonapi`
 * `openmetric/grafana`
 * `openmetric/tools` This image contains several management tools, currently only
@@ -66,9 +64,7 @@ All runtime files (log, conf, data etc.) are all stored in ``/openmetric``, the 
 ```
 /openmetric/
   |- conf/
-  |   |- relay.conf, carbon.conf, schemas.conf, zipper.conf, api.conf, grafana.conf
-  |- log/
-  |   |- relay.log, carbon.log, zipper.log, api.log, ...
+  |   |- relay.conf, carbon.conf, schemas.conf, api.yaml, grafana.conf
   |- data/
   |   |- whisper
   |   |- grafana

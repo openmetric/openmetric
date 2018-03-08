@@ -2,9 +2,9 @@
 
 set -e
 
-export GOLANG_VERSION=1.8
+export GOLANG_VERSION=1.10
 export GOLANG_DOWNLOAD_URL=https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz
-export GOLANG_DOWNLOAD_SHA256=53ab94104ee3923e228a2cb2116e5e462ad3ebaeea06ff04463479d7f12d27ca
+export GOLANG_DOWNLOAD_SHA256=b5a64335f1490277b585832d1f6c7f8c6c11206cba5cd3f771dcb87b98ad1a33
 
 export GOPATH=/go
 export PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
@@ -60,10 +60,6 @@ setup_runtime_env() {
     # curl/netcat for health check
     apk add --no-cache su-exec libc6-compat curl ca-certificates netcat-openbsd
 
-    # setup libc6 compact
-    mkdir -p /lib64
-    ln -s /lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
-
     # create directory layout
     mkdir -p /openmetric/conf /openmetric/log /openmetric/data
     chown openmetric:openmetric -R /openmetric/
@@ -102,9 +98,6 @@ setup_build_env() {
             BUILD_DEPS="$BUILD_DEPS gcc musl-dev bison flex automake autoconf"
             ;;
         go-carbon)
-            REQUIRE_GOLANG=true
-            ;;
-        carbonzipper)
             REQUIRE_GOLANG=true
             ;;
         carbonapi)
@@ -216,42 +209,9 @@ install_go_carbon() {
     install -v -D -m 755 $src_dir/go-carbon /usr/bin/go-carbon
 }
 
-install_carbonzipper() {
-    #git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/go-graphite/carbonapi
-    #git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/go-graphite/carbonzipper
-    local repo_url=https://github.com/go-graphite/carbonzipper.git
-    local src_dir=$GOPATH/src/github.com/go-graphite/carbonzipper
-    local repo_url2=https://github.com/dgryski/carbonzipper.git
-    local src_dir2=$GOPATH/src/github.com/dgryski/carbonzipper
-
-    if [ "$CARBONZIPPER_VERSION" = "edge" ]; then
-        CARBONZIPPER_VERSION=master
-    fi
-
-    echo "Compiling carbonzipper ..."
-    clone_git_repo $repo_url $src_dir $CARBONZIPPER_VERSION
-    clone_git_repo $repo_url2 $src_dir2 $CARBONZIPPER_VERSION
-
-    local binary_file=""
-    if [ -f "$src_dir/Makefile" ]; then
-        (cd $src_dir && make)
-        binary_file=$src_dir/carbonzipper
-    else
-        go get -v github.com/go-graphite/carbonzipper
-        binary_file=$GOPATH/bin/carbonzipper
-    fi
-
-    echo "Installing carbonzipper ..."
-    install -v -D -m 755 $binary_file /usr/bin/carbonzipper
-}
-
 install_carbonapi() {
-    #git config --global url.https://github.com/openmetric/carbonapi.insteadOf https://github.com/go-graphite/carbonapi
-    #git config --global url.https://github.com/openmetric/carbonzipper.insteadOf https://github.com/go-graphite/carbonzipper
     local repo_url=https://github.com/go-graphite/carbonapi.git
     local src_dir=$GOPATH/src/github.com/go-graphite/carbonapi
-    local repo_url2=https://github.com/dgryski/carbonapi.git
-    local src_dir2=$GOPATH/src/github.com/dgryski/carbonapi
 
     if [ "$CARBONAPI_VERSION" = "edge" ]; then
         CARBONAPI_VERSION=master
@@ -259,14 +219,13 @@ install_carbonapi() {
 
     echo "Compiling carbonapi ..."
     clone_git_repo $repo_url $src_dir $CARBONAPI_VERSION
-    clone_git_repo $repo_url2 $src_dir2 $CARBONAPI_VERSION
 
     local binary_file=""
     if [ -f "$src_dir/Makefile" ]; then
         (cd $src_dir && make)
         binary_file=$src_dir/carbonapi
     else
-        go get -v -tags cairo github.com/go-graphite/carbonapi
+        go get -v -tags cairo github.com/go-graphite/carbonapi -ldflags "-X main.BuildVersion=${CARBONAPI_VERSION}"
         binary_file=$GOPATH/bin/carbonapi
     fi
 
@@ -291,7 +250,6 @@ install_grafana() {
     (cd $src_dir \
         && go run build.go setup \
         && go run build.go build \
-        && sed -i "/karma:test/d" tasks/build_task.js \
         && yarn install --pure-lockfile \
         && ./node_modules/.bin/grunt release
     )
@@ -306,7 +264,6 @@ install_grafana() {
     # these cleanup jobs are not suitable to do in global cleanup_build_env()
     find /usr/share/grafana/ -name '*.js.map' -delete
     npm uninstall -g yarn
-    npm cache clear
 }
 
 install_tools() {
@@ -351,10 +308,6 @@ case "$IMAGE_TYPE" in
     go-carbon)
         require_build_arg GO_CARBON_VERSION
         install=install_go_carbon
-        ;;
-    carbonzipper)
-        require_build_arg CARBONZIPPER_VERSION
-        install=install_carbonzipper
         ;;
     carbonapi)
         require_build_arg CARBONAPI_VERSION

@@ -1,82 +1,46 @@
 version: "3"
 
-networks:
-  openmetric_quickstart:
-    driver: bridge
-
 services:
-  carbon:
-    image: openmetric/go-carbon:latest
-    hostname: carbon
-    restart: always
-    volumes:
-      - ./conf/carbon.conf:/openmetric/conf/carbon.conf:ro
-      - ./conf/schemas.conf:/openmetric/conf/schemas.conf:ro
-    networks:
-      - openmetric_quickstart
-    healthcheck:
-      test: "curl -fsSL -o /dev/null 'http://localhost:2005/metrics/find/?query=*&format=json'"
-      interval: 10s
-      timeout: 1s
-      retries: 3
   relay:
     image: openmetric/carbon-c-relay:latest
-    hostname: relay
-    restart: always
     volumes:
       - ./conf/relay.conf:/openmetric/conf/relay.conf:ro
-    networks:
-      - openmetric_quickstart
     ports:
       - "2003:2003"
     depends_on:
-      # relay relies on 'carbon' to be resolved
       - carbon
     healthcheck:
       test: nc -zv localhost 2003
       interval: 10s
       timeout: 1s
       retries: 3
-  zipper:
-    image: openmetric/carbonzipper:latest
-    hostname: zipper
-    restart: always
+  carbon:
+    image: openmetric/go-carbon:latest
     volumes:
-      - ./conf/zipper.conf:/openmetric/conf/zipper.conf:ro
-    networks:
-      - openmetric_quickstart
-    depends_on:
-      - relay
+      - ./conf/carbon.conf:/openmetric/conf/carbon.conf:ro
+      - ./conf/schemas.conf:/openmetric/conf/schemas.conf:ro
     healthcheck:
-      test: "curl -fsSL -o /dev/null http://localhost:2006/lb_check"
+      test: "curl -fsSL -o /dev/null 'http://localhost:8080/metrics/find/?query=*&format=json'"
       interval: 10s
       timeout: 1s
       retries: 3
   api:
     image: openmetric/carbonapi:latest
-    hostname: api
-    restart: always
     volumes:
-      - ./conf/api.conf:/openmetric/conf/api.conf:ro
-    networks:
-      - openmetric_quickstart
+      - ./conf/api.yaml:/openmetric/conf/api.yaml:ro
     ports:
-      - "5000:5000"
+      - "5000:8080"
     depends_on:
       - relay
     healthcheck:
-      test: "curl -fsSL -o /dev/null http://localhost:5000/lb_check"
+      test: "curl -fsSL -o /dev/null http://localhost:8080/lb_check"
       interval: 10s
       timeout: 1s
       retries: 3
   grafana:
     image: openmetric/grafana:latest
-    hostname: grafana
-    restart: always
     volumes:
       - ./conf/grafana.conf:/openmetric/conf/grafana.conf:ro
-    networks:
-      - openmetric_quickstart
     ports:
       - "3000:3000"
     depends_on:
