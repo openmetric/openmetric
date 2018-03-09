@@ -264,6 +264,8 @@ install_grafana() {
     # these cleanup jobs are not suitable to do in global cleanup_build_env()
     find /usr/share/grafana/ -name '*.js.map' -delete
     npm uninstall -g yarn
+    # yarn cache files
+    rm -rf /usr/local/share/.cache/
 }
 
 install_tools() {
