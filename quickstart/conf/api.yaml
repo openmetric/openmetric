@@ -27,10 +27,10 @@ upstreams:
   backends:
     - "http://carbon:8080"
   graphite09compat: false
-  logger:
-    - logger: ""
-      file: "stdout"
-      level: "info"
-      encoding: "console"
-      encodingTime: "iso8601"
-      encodingDuration: "seconds"
+logger:
+  - logger: ""
+    file: "stdout"
+    level: "info"
+    encoding: "console"
+    encodingTime: "iso8601"
+    encodingDuration: "seconds"
