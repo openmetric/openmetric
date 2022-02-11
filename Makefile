@@ -1,7 +1,7 @@
 BUILD_DATE = $(shell date "+%Y%m%d")
 
 LOCAL_APK_MIRROR         ?= https://mirrors.ustc.edu.cn/alpine/
-LOCAL_NPM_MIRROR         ?= https://registry.npm.taobao.org
+LOCAL_NPM_MIRROR         ?= https://registry.npmmirror.com
 LOCAL_NPM_DISTURL_MIRROR ?= https://npm.taobao.org/dist
 
 CARBON_C_RELAY_VERSION   ?= $(if $(EDGE),edge,v3.2)
